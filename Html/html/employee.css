@@ -1,0 +1,157 @@
+/* ---------- GLOBAL ---------- */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #0a1a2f, #0e2a47);
+  color: #e0f1ff;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  width: 240px;
+  background: #081a30;
+  border-right: 1px solid rgba(0, 180, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 25px 15px;
+  box-shadow: 2px 0 10px rgba(0, 180, 255, 0.2);
+  position: fixed;
+  height: 100vh;
+}
+
+.sidebar-title {
+  font-size: 1.5rem;
+  color: #00b4ff;
+  margin-bottom: 40px;
+  text-shadow: 0 0 10px #00b4ff;
+}
+
+.nav-menu {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 180, 255, 0.4);
+  color: #e0f1ff;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+  background: linear-gradient(90deg, #0077cc, #00b4ff);
+  box-shadow: 0 0 15px #00b4ff;
+  transform: translateX(5px);
+}
+
+.logout-btn {
+  margin-top: auto;
+  background: rgba(255, 60, 60, 0.15);
+  border: 1px solid rgba(255, 100, 100, 0.3);
+}
+
+.logout-btn:hover {
+  background: #ff4d4d;
+  color: white;
+  box-shadow: 0 0 10px #ff4d4d;
+}
+
+/* ---------- FORM SECTION ---------- */
+.main-content {
+  flex: 1;
+  margin-left: 240px;
+  padding: 50px;
+  animation: fadeIn 1s ease;
+}
+
+.main-content h1 {
+  font-size: 2rem;
+  color: #00b4ff;
+  margin-bottom: 30px;
+  text-shadow: 0 0 15px #00b4ff;
+}
+
+.employee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #cde9ff;
+}
+
+input, select {
+  background-color: #0e223b;
+  border: 1px solid rgba(0, 180, 255, 0.3);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  color: #e0f1ff;
+  outline: none;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+input:focus, select:focus {
+  box-shadow: 0 0 10px #00b4ff;
+  border-color: #00b4ff;
+}
+
+/* ---------- SAVE BUTTON ---------- */
+.form-actions {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.save-btn {
+  background: linear-gradient(90deg, #0077cc, #00b4ff);
+  border: none;
+  padding: 14px 35px;
+  font-size: 1rem;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.save-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #00b4ff;
+}
+
+/* ---------- ANIMATION ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}

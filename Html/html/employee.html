@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Employee | BluePulse</title>
+  <link rel="stylesheet" href="employee.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2 class="sidebar-title">BluePulse</h2>
+      <nav class="nav-menu">
+        <button class="nav-btn active">👤 Create Employee</button>
+        <button class="nav-btn" onclick="window.location.href='dashboard.html'">🕒 Attendance</button>
+        <button class="nav-btn">⚙️ Settings</button>
+        <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
+      </nav>
+    </aside>
+
+    <!-- Main Form Section -->
+    <main class="main-content">
+      <h1>Create Employee</h1>
+      <form id="employeeForm" class="employee-form">
+        <!-- ROW 1 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" required />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" required />
+          </div>
+        </div>
+
+        <!-- ROW 2 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Work Email</label>
+            <input type="email" placeholder="example@company.com" required />
+          </div>
+          <div class="form-group">
+            <label>Work Phone</label>
+            <input type="tel" placeholder="+92 3XX XXXXXXX" required />
+          </div>
+        </div>
+
+        <!-- ROW 3 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Job Title</label>
+            <input type="text" />
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <input type="text" />
+          </div>
+        </div>
+
+        <!-- ROW 4 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Manager</label>
+            <input type="text" />
+          </div>
+          <div class="form-group">
+            <label>Work Location</label>
+            <input type="text" />
+          </div>
+        </div>
+
+        <!-- ROW 5 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Joining Date</label>
+            <input type="date" />
+          </div>
+          <div class="form-group">
+            <label>Contract End Date</label>
+            <input type="date" />
+          </div>
+        </div>
+
+        <!-- ROW 6 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Gender</label>
+            <select>
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Marital Status</label>
+            <select>
+              <option value="">Select</option>
+              <option>Single</option>
+              <option>Married</option>
+              <option>Divorced</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ROW 7 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Identification No (CNIC)</label>
+            <input type="text" placeholder="XXXXX-XXXXXXX-X" />
+          </div>
+          <div class="form-group">
+            <label>Bank Account No</label>
+            <input type="text" />
+          </div>
+        </div>
+
+        <!-- ROW 8 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Emergency Contact</label>
+            <input type="text" />
+          </div>
+          <div class="form-group">
+            <label>Emergency Phone</label>
+            <input type="tel" placeholder="+92 3XX XXXXXXX" />
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="form-actions">
+          <button type="submit" class="save-btn">💾 Save Employee</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script src="employee.js"></script>
+</body>
+</html>

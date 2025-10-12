@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | BluePulse</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <h2 class="sidebar-title">BluePulse</h2>
+      <nav class="nav-menu">
+<button class="nav-btn" onclick="window.location.href='employee.html'">👤 Create Employee</button>
+    <button class="nav-btn" onclick="window.location.href='attendance.html'">🕒 Attendance</button>
+    <button class="nav-btn" onclick="window.location.href='settings.html'">⚙️ Settings</button>
+
+        <button class="nav-btn logout-btn">🚪 Logout</button>
+      </nav>
+    </aside>
+
+    <!-- Main Dashboard Content -->
+    <main class="main-content">
+      <h1>Welcome, Asad 👋</h1>
+      <p>Select an option from the left navigation to continue.</p>
+    </main>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

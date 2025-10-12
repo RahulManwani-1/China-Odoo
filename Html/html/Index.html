@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Animated Splash + Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <div class="logo-container">
+      <h1 class="animated-text">Welcome to <span>BluePulse</span></h1>
+    </div>
+  </div>
+
+  <!-- Login Page -->
+  <section id="login-page" class="hidden">
+    <div class="login-container">
+      <h2 class="login-title">Login</h2>
+      <form class="login-form" id="loginForm">
+        <div class="input-group">
+          <input id="username" type="text" placeholder="Username" required />
+        </div>
+        <div class="input-group">
+          <input id="password" type="password" placeholder="Password" required />
+        </div>
+        <button type="submit" class="login-btn">Sign In</button>
+        <p id="error-msg"></p>
+      </form>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>

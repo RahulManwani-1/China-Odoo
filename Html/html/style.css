@@ -1,0 +1,159 @@
+/* ---------- GLOBAL ---------- */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background-color: #0a1a2f;
+  color: #e0f1ff;
+  overflow: hidden;
+}
+
+/* ---------- SPLASH SCREEN ---------- */
+#splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, #0e2a47, #06111f);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  animation: fadeOut 1s ease-in-out forwards;
+  animation-delay: 3s;
+}
+
+.logo-container {
+  text-align: center;
+}
+
+.animated-text {
+  font-size: 2.5rem;
+  letter-spacing: 2px;
+  color: #00b4ff;
+  text-transform: uppercase;
+  animation: textGlow 2.5s ease-in-out infinite alternate;
+}
+
+.animated-text span {
+  color: #0077cc;
+}
+
+/* Glow Animation */
+@keyframes textGlow {
+  0% {
+    text-shadow: 0 0 10px #0077cc, 0 0 20px #00b4ff, 0 0 30px #00d9ff;
+    opacity: 0.8;
+  }
+  100% {
+    text-shadow: 0 0 25px #00b4ff, 0 0 45px #00e1ff, 0 0 70px #00faff;
+    opacity: 1;
+  }
+}
+
+/* Fade-Out Animation for Splash */
+@keyframes fadeOut {
+  0% { opacity: 1; visibility: visible; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+/* ---------- LOGIN PAGE ---------- */
+#login-page {
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(145deg, #071a33, #0e2a47);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+#login-page.show {
+  opacity: 1;
+}
+
+.hidden {
+  display: none;
+}
+
+.login-container {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 180, 255, 0.2);
+  border-radius: 20px;
+  padding: 40px 50px;
+  text-align: center;
+  box-shadow: 0 0 25px rgba(0, 180, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.login-title {
+  font-size: 1.8rem;
+  margin-bottom: 25px;
+  color: #00b4ff;
+  letter-spacing: 1px;
+  text-shadow: 0 0 15px #00b4ff;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #0e223b;
+  color: #e0f1ff;
+  transition: box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+  box-shadow: 0 0 10px #00b4ff;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, #0077cc, #00b4ff);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.login-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #00b4ff;
+}
+/* Error message */
+#error-msg {
+  color: #ff4d4d;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Show when active */
+#error-msg.show {
+  opacity: 1;
+}
+
+/* Shake animation for wrong credentials */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.shake {
+  animation: shake 0.4s;
+}
