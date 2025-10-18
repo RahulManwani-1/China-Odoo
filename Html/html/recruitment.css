@@ -1,0 +1,198 @@
+/* 🌌 Base Styling */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #0a1a2f, #0e2a47);
+  color: #e0f1ff;
+  height: 100vh;
+  display: flex;
+}
+
+/* 📁 Layout */
+.dashboard-container {
+  display: flex;
+  width: 100%;
+}
+
+/* 🧭 Sidebar */
+.sidebar {
+  width: 240px;
+  background: #081a30;
+  border-right: 1px solid rgba(0, 180, 255, 0.2);
+  padding: 25px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 2px 0 10px rgba(0, 180, 255, 0.2);
+}
+
+.sidebar-title {
+  color: #00b4ff;
+  margin-bottom: 40px;
+  text-shadow: 0 0 10px #00b4ff;
+}
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 180, 255, 0.4);
+  color: #e0f1ff;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+  background: linear-gradient(90deg, #0077cc, #00b4ff);
+  box-shadow: 0 0 10px #00b4ff;
+  transform: translateX(5px);
+}
+
+.logout-btn {
+  margin-top: auto;
+  background: rgba(255, 60, 60, 0.15);
+  border: 1px solid rgba(255, 100, 100, 0.3);
+}
+
+/* 🖥️ Main Content */
+.main-content {
+  flex: 1;
+  padding: 40px;
+  background: transparent;
+  animation: fadeIn 0.8s ease;
+}
+
+.main-content h1,
+.main-content h2 {
+  color: #00b4ff;
+  margin-bottom: 25px;
+  text-shadow: 0 0 10px #00b4ff;
+}
+
+/* 🧾 Form Styling */
+.form-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
+
+label {
+  margin-bottom: 6px;
+}
+
+input,
+select,
+textarea {
+  background: #0e223b;
+  border: 1px solid rgba(0, 180, 255, 0.3);
+  border-radius: 10px;
+  padding: 10px;
+  color: #e0f1ff;
+  margin-top: 5px;
+}
+
+textarea {
+  resize: none;
+  width: 100%;
+}
+
+/* 💾 Buttons */
+.save-btn {
+  background: linear-gradient(90deg, #0077cc, #00b4ff);
+  border: none;
+  padding: 12px 30px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.save-btn:hover {
+  background: linear-gradient(90deg, #0095dd, #00bfff);
+  box-shadow: 0 0 10px #00bfff;
+}
+
+.cancel-btn {
+  background: #ff4d4d;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.cancel-btn:hover {
+  background: #e63946;
+}
+
+/* 📊 Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  border: 1px solid rgba(0, 180, 255, 0.3);
+  text-align: left;
+}
+
+.data-table th {
+  background: rgba(0, 180, 255, 0.1);
+}
+
+/* 🚀 Pipeline / Stages */
+.pipeline {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+
+.stage {
+  flex: 1;
+  background: #0e223b;
+  padding: 15px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 180, 255, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: #e0f1ff;
+}
+
+.stage:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #00b4ff;
+}
+
+/* 🧩 Utility */
+.hidden {
+  display: none;
+}
+
+/* ✨ Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}

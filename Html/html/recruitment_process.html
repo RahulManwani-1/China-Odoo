@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recruitment Process | BluePulse</title>
+  <link rel="stylesheet" href="recruitment.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">China-Odoo</h2>
+      <nav class="nav-menu">
+        <button class="nav-btn" onclick="window.location.href='departments.html'">🏢 Departments</button>
+        <button class="nav-btn" onclick="window.location.href='job_positions.html'">💼 Job Positions</button>
+        <button class="nav-btn active" onclick="window.location.href='recruitment_process.html'">📋 Recruitment</button>
+        <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <h1>Recruitment Applications</h1>
+
+      <!-- Tree View -->
+      <table class="data-table" id="applicationTable">
+        <thead>
+          <tr>
+            <th>Sequence</th>
+            <th>Applicant Name</th>
+            <th>Job Position</th>
+            <th>Department</th>
+            <th>Stage</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <button class="save-btn" id="addNewApp">➕ New Application</button>
+
+      <!-- Form Section -->
+      <div id="applicationFormContainer" class="hidden">
+        <h2 id="formTitle">Create Application</h2>
+        <form id="applicationForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Applicant Name</label>
+              <input type="text" id="applicantName" required>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="applicantEmail" required>
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="text" id="applicantPhone">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Department</label>
+              <input type="text" id="applicantDept">
+            </div>
+            <div class="form-group">
+              <label>Job Position</label>
+              <input type="text" id="applicantPosition">
+            </div>
+            <div class="form-group">
+              <label>Expected Salary</label>
+              <input type="number" id="expectedSalary">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Experience (Years)</label>
+              <input type="number" id="experience" min="0">
+            </div>
+            <div class="form-group">
+              <label>Qualification</label>
+              <input type="text" id="qualification">
+            </div>
+            <div class="form-group">
+              <label>Current Stage</label>
+              <select id="stageSelect">
+                <option>Initiate Application</option>
+                <option>Overview</option>
+                <option>Initial Call</option>
+                <option>First Interview</option>
+                <option>Second Interview</option>
+                <option>Finalized</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea id="notes" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="save-btn">💾 Save Application</button>
+            <button type="button" class="cancel-btn" id="cancelForm">❌ Cancel</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="recruitment.js"></script>
+</body>
+</html>
