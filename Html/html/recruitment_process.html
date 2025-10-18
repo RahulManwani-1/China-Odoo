@@ -9,12 +9,13 @@
 <body>
   <div class="dashboard-container">
     <aside class="sidebar">
-      <h2 class="sidebar-title">China-Odoo</h2>
+      <h2 class="sidebar-title">Human Resource Planner</h2>
       <nav class="nav-menu">
         <button class="nav-btn" onclick="window.location.href='departments.html'">🏢 Departments</button>
         <button class="nav-btn" onclick="window.location.href='job_positions.html'">💼 Job Positions</button>
         <button class="nav-btn active" onclick="window.location.href='recruitment_process.html'">📋 Recruitment</button>
-        <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
+         <button class="nav-btn logout-btn" onclick="window.location.href='dashboard.html'">🚪 Logout</button>
+        
       </nav>
     </aside>
 
@@ -67,14 +68,14 @@
             </div>
             <div class="form-group">
               <label>Expected Salary</label>
-              <input type="number" id="expectedSalary">
+              <input type="text" id="expectedSalary">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label>Experience (Years)</label>
-              <input type="number" id="experience" min="0">
+              <input type="text" id="experience" min="0">
             </div>
             <div class="form-group">
               <label>Qualification</label>
