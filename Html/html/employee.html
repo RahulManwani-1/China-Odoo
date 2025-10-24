@@ -12,26 +12,33 @@
     <aside class="sidebar">
       <h2 class="sidebar-title">Human Resource Planner</h2>
       <nav class="nav-menu">
-        <button class="nav-btn active">👤 Create Employee</button>
+        <button class="nav-btn active">👤 Employees</button>
         <button class="nav-btn" onclick="window.location.href='dashboard.html'">🕒 Attendance</button>
         <button class="nav-btn">⚙️ Settings</button>
         <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
       </nav>
     </aside>
 
-    <!-- Main Form Section -->
+    <!-- Main Section -->
     <main class="main-content">
-      <h1>Create Employee</h1>
-      <form id="employeeForm" class="employee-form">
+      <h1>Employee Management</h1>
+
+      <!-- Add New Button -->
+      <div class="form-actions" style="text-align: right;">
+        <button id="addNewBtn" class="save-btn">➕ Add New Employee</button>
+      </div>
+
+      <!-- Employee Form -->
+      <form id="employeeForm" class="employee-form hidden">
         <!-- ROW 1 -->
         <div class="form-row">
           <div class="form-group">
             <label>First Name</label>
-            <input type="text" required />
+            <input type="text" id="firstName" required />
           </div>
           <div class="form-group">
             <label>Last Name</label>
-            <input type="text" required />
+            <input type="text" id="lastName" required />
           </div>
         </div>
 
@@ -39,11 +46,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Work Email</label>
-            <input type="email" placeholder="example@company.com" required />
+            <input type="email" id="email" placeholder="example@company.com" required />
           </div>
           <div class="form-group">
             <label>Work Phone</label>
-            <input type="tel" placeholder="+92 3XX XXXXXXX" required />
+            <input type="tel" id="phone" placeholder="+92 3XX XXXXXXX" required />
           </div>
         </div>
 
@@ -51,11 +58,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Job Title</label>
-            <input type="text" />
+            <input type="text" id="jobTitle" />
           </div>
           <div class="form-group">
             <label>Department</label>
-            <input type="text" />
+            <input type="text" id="department" />
           </div>
         </div>
 
@@ -63,11 +70,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Manager</label>
-            <input type="text" />
+            <input type="text" id="manager" />
           </div>
           <div class="form-group">
             <label>Work Location</label>
-            <input type="text" />
+            <input type="text" id="location" />
           </div>
         </div>
 
@@ -75,11 +82,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Joining Date</label>
-            <input type="date" />
+            <input type="date" id="joinDate" />
           </div>
           <div class="form-group">
             <label>Contract End Date</label>
-            <input type="date" />
+            <input type="date" id="endDate" />
           </div>
         </div>
 
@@ -87,7 +94,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Gender</label>
-            <select>
+            <select id="gender">
               <option value="">Select</option>
               <option>Male</option>
               <option>Female</option>
@@ -96,7 +103,7 @@
           </div>
           <div class="form-group">
             <label>Marital Status</label>
-            <select>
+            <select id="maritalStatus">
               <option value="">Select</option>
               <option>Single</option>
               <option>Married</option>
@@ -109,11 +116,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Identification No (CNIC)</label>
-            <input type="text" placeholder="XXXXX-XXXXXXX-X" />
+            <input type="text" id="cnic" placeholder="XXXXX-XXXXXXX-X" />
           </div>
           <div class="form-group">
             <label>Bank Account No</label>
-            <input type="text" />
+            <input type="text" id="bankAccount" />
           </div>
         </div>
 
@@ -121,19 +128,48 @@
         <div class="form-row">
           <div class="form-group">
             <label>Emergency Contact</label>
-            <input type="text" />
+            <input type="text" id="emergencyContact" />
           </div>
           <div class="form-group">
             <label>Emergency Phone</label>
-            <input type="tel" placeholder="+92 3XX XXXXXXX" />
+            <input type="tel" id="emergencyPhone" placeholder="+92 3XX XXXXXXX" />
           </div>
         </div>
 
-        <!-- Submit -->
+        <!-- Save / Cancel -->
         <div class="form-actions">
           <button type="submit" class="save-btn">💾 Save Employee</button>
+          <button type="button" id="cancelBtn" class="delete-btn">❌ Cancel</button>
         </div>
       </form>
+
+      <!-- Tree View -->
+      <h2>Employee Tree View</h2>
+      <table class="data-table" id="employeeTable">
+        <thead>
+          <tr>
+            <th>Sequence</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Department</th>
+            <th>Job Title</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="employeeTableBody"></tbody>
+      </table>
+      <!-- Employee Detail Modal -->
+<div id="employeeModal" class="modal hidden">
+  <div class="modal-content">
+    <span id="closeModal" class="close-btn">&times;</span>
+    <h2>Employee Details</h2>
+    <div id="employeeDetails" class="details-grid"></div>
+    <div class="modal-actions">
+      <button id="editFromModal" class="edit-btn">✏️ Edit</button>
+    </div>
+  </div>
+</div>
+
     </main>
   </div>
 

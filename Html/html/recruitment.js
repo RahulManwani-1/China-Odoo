@@ -56,10 +56,38 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("applicationForm");
   const cancelForm = document.getElementById("cancelForm");
   const formTitle = document.getElementById("formTitle");
+  const stars = document.querySelectorAll(".star");
 
   let applications = JSON.parse(localStorage.getItem("applications")) || [];
   let editingIndex = null;
+  let selectedRating = 0;
 
+  // ⭐ Update Star UI
+  function updateStars(rating) {
+    stars.forEach(star => {
+      const value = parseInt(star.getAttribute("data-value"));
+      star.classList.toggle("filled", value <= rating);
+    });
+  }
+
+  // ⭐ Click event for stars
+  stars.forEach(star => {
+    star.addEventListener("click", () => {
+      selectedRating = parseInt(star.getAttribute("data-value"));
+      updateStars(selectedRating);
+    });
+  });
+
+  // ⭐ Render stars for table
+  function renderStars(rating) {
+    let html = "";
+    for (let i = 1; i <= 5; i++) {
+      html += `<span style="color:${i <= rating ? 'gold' : '#ccc'}">★</span>`;
+    }
+    return html;
+  }
+
+  // Render all applications in table
   function renderApplications() {
     appTable.innerHTML = "";
     applications.forEach((app, index) => {
@@ -70,20 +98,25 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${app.position}</td>
         <td>${app.department}</td>
         <td>${app.stage}</td>
+        <td>${renderStars(app.rating || 0)}</td>
       `;
       tr.addEventListener("click", () => openForm(index));
       appTable.appendChild(tr);
     });
   }
 
+  // Generate unique sequence
   function generateSequence() {
     const num = applications.length + 1;
     return "APP-" + num.toString().padStart(4, "0");
   }
 
+  // Open form for new or existing record
   function openForm(index = null) {
     formContainer.classList.remove("hidden");
     form.reset();
+    updateStars(0);
+    selectedRating = 0;
 
     if (index !== null) {
       const app = applications[index];
@@ -99,18 +132,23 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("qualification").value = app.qualification;
       document.getElementById("stageSelect").value = app.stage;
       document.getElementById("notes").value = app.notes;
+      selectedRating = app.rating || 0;
+      updateStars(selectedRating);
     } else {
       editingIndex = null;
       formTitle.textContent = "Create Application";
     }
   }
 
+  // Event: Add new
   addNewApp.addEventListener("click", () => openForm());
 
+  // Event: Cancel
   cancelForm.addEventListener("click", () => {
     formContainer.classList.add("hidden");
   });
 
+  // Event: Submit form
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -125,7 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
       experience: document.getElementById("experience").value,
       qualification: document.getElementById("qualification").value,
       stage: document.getElementById("stageSelect").value,
-      notes: document.getElementById("notes").value
+      notes: document.getElementById("notes").value,
+      rating: selectedRating,
     };
 
     if (editingIndex === null) {
@@ -141,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderApplications();
 });
+
 document.addEventListener("DOMContentLoaded", function() {
   const jobForm = document.getElementById("jobForm");
   const jobTableBody = document.querySelector("#jobTable tbody");

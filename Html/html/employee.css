@@ -155,3 +155,209 @@ input:focus, select:focus {
   from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* ------------------ Tree / Table View Styles ------------------ */
+
+/* Table container */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: rgba(5, 12, 25, 0.25);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(2, 8, 20, 0.5);
+}
+
+/* Header */
+.data-table thead th {
+  background: linear-gradient(90deg, rgba(0,180,255,0.06), rgba(0,180,255,0.03));
+  color: #bfe9ff;
+  font-weight: 600;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(0,180,255,0.08);
+  letter-spacing: 0.4px;
+  font-size: 0.95rem;
+}
+
+/* Rows */
+.data-table tbody tr {
+  border-bottom: 1px solid rgba(0,180,255,0.04);
+  transition: background 0.18s ease, transform 0.12s ease;
+  cursor: pointer;
+}
+
+/* Highlight on hover */
+.data-table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(0,180,255,0.03), rgba(0,180,255,0.02));
+  transform: translateY(-1px);
+}
+
+/* Cells */
+.data-table td {
+  padding: 12px 14px;
+  color: #e6f7ff;
+  vertical-align: middle;
+  font-size: 0.95rem;
+}
+
+/* Sequence column styling */
+.data-table td:first-child,
+.data-table thead th:first-child {
+  width: 110px;
+  color: #00d0ff;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+
+/* Name column make it stand out */
+.data-table td:nth-child(2) {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Actions column */
+.data-table td:last-child {
+  width: 160px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+/* Buttons in table */
+.edit-btn,
+.delete-btn,
+.view-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #e0f1ff;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.18s ease;
+}
+
+.edit-btn:hover {
+  background: rgba(0,180,255,0.12);
+  box-shadow: 0 4px 12px rgba(0,180,255,0.08);
+}
+
+.delete-btn {
+  background: rgba(255, 80, 80, 0.06);
+  border: 1px solid rgba(255,80,80,0.14);
+}
+.delete-btn:hover {
+  background: rgba(255, 80, 80, 0.18);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255,80,80,0.08);
+}
+
+/* Selected / active row (use JS to toggle .selected) */
+.data-table tbody tr.selected {
+  background: linear-gradient(90deg, rgba(0,180,255,0.08), rgba(0,180,255,0.04));
+  box-shadow: inset 0 0 0 1px rgba(0,180,255,0.06);
+}
+
+/* ---------- Expandable details row (hidden by default) ---------- */
+/* Add a TR with class .details-row directly after a record row to show details */
+.details-row {
+  background: rgba(2, 8, 20, 0.35);
+}
+
+.details-row td {
+  padding: 14px;
+  border-top: 1px solid rgba(0,180,255,0.04);
+  color: #cfeeff;
+}
+
+/* Hide details row by default — toggle with class "open" */
+.details-row.hidden {
+  display: none;
+}
+
+/* Inside details cell make a small card */
+.details-card {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.details-item {
+  background: rgba(255,255,255,0.02);
+  padding: 10px 12px;
+  border-radius: 8px;
+  min-width: 180px;
+  border: 1px solid rgba(0,180,255,0.04);
+  color: #dff6ff;
+  font-size: 0.92rem;
+}
+
+/* Responsive: stack table on small screens */
+@media (max-width: 880px) {
+  .data-table thead { display: none; }
+  .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+  .data-table tr { margin-bottom: 12px; }
+  .data-table td { padding: 10px; border: none; background: rgba(255,255,255,0.02); border-radius: 8px; }
+  .data-table td:first-child { font-weight: 700; }
+  .data-table td:last-child { display: flex; gap: 8px; margin-top: 8px; }
+}
+.hidden {
+  display: none;
+}
+/* ===== Modal Styling ===== */
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 999;
+}
+
+.modal.hidden {
+  display: none;
+}
+.modal-content {
+  background: #fefefe;
+  color: #222; /* add this line */
+  padding: 25px;
+  border-radius: 12px;
+  width: 60%;
+  max-height: 85%;
+  overflow-y: auto;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+
+.close-btn {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 25px;
+  margin-top: 10px;
+}
+
+.details-grid p {
+  margin: 5px 0;
+  font-size: 15px;
+}
+
+.modal-actions {
+  text-align: right;
+  margin-top: 15px;
+}
+@keyframes modalPop {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-content {
+  animation: modalPop 0.3s ease;
+}
