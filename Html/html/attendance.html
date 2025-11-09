@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Attendance | BluePulse</title>
+<link rel="stylesheet" href="employee.css" />
+</head>
+<body>
+<div class="dashboard-container">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Human Resource Planner</h2>
+    <nav class="nav-menu">
+      <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
+                    <button class="nav-btn" onclick="window.location.href='checkin.html'">👤 Check In</button>
+        <button class="nav-btn" onclick="window.location.href='checkout.html'">👤 Check Out</button>
+
+      <button class="nav-btn active">🕒 Attendance</button>
+      <button class="nav-btn">⚙️ Settings</button>
+      <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <h1>Attendance Record</h1>
+    <table class="data-table" id="attendanceTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Present</th>
+          <th>Late</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceBody"></tbody>
+    </table>
+
+    <!-- Modal for Details -->
+    <div id="attendanceModal" class="modal hidden">
+      <div class="modal-content">
+        <span id="closeModal" class="close-btn">&times;</span>
+        <h2>Employee Attendance Details</h2>
+        <div id="modalDetails" class="details-grid"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const attendanceBody = document.getElementById("attendanceBody");
+  const logout = document.getElementById("logout");
+  const modal = document.getElementById("attendanceModal");
+  const modalDetails = document.getElementById("modalDetails");
+  const closeModal = document.getElementById("closeModal");
+
+  let attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+  const employees = JSON.parse(localStorage.getItem("employees")) || [];
+
+  const renderAttendance = () => {
+    attendanceBody.innerHTML = "";
+    attendance.forEach((record, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${record.date}</td>
+        <td>${record.present}</td>
+        <td>${record.late}</td>
+      `;
+      row.dataset.index = index;
+      attendanceBody.appendChild(row);
+    });
+  };
+
+  renderAttendance();
+
+  // Click to see details
+  attendanceBody.addEventListener("click", (e) => {
+    const row = e.target.closest("tr");
+    if (!row) return;
+    const record = attendance[row.dataset.index];
+
+    modalDetails.innerHTML = "";
+    record.checkedIn.forEach(empSeq => {
+      const emp = employees.find(e => e.sequence === empSeq);
+      if (!emp) return;
+
+      const checkInTime = record.checkInTimes?.[empSeq] || "-";
+      const checkOutTime = record.checkOutTimes?.[empSeq] || "-";
+
+      const div = document.createElement("div");
+      div.classList.add("details-item");
+      div.innerHTML = `
+        <p><strong>Name:</strong> ${emp.firstName} ${emp.lastName}</p>
+        <p><strong>Check In:</strong> ${checkInTime}</p>
+        <p><strong>Check Out:</strong> ${checkOutTime}</p>
+      `;
+      modalDetails.appendChild(div);
+    });
+
+    modal.classList.remove("hidden");
+  });
+
+  closeModal.onclick = () => modal.classList.add("hidden");
+  modal.onclick = (event) => {
+    if (event.target === modal) modal.classList.add("hidden");
+  };
+
+  logout.addEventListener("click", () => {
+    alert("👋 You have been logged out.");
+    window.location.href = "index.html";
+  });
+});
+</script>
+</body>
+</html>

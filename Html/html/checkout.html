@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Check Out | BluePulse</title>
+  <link rel="stylesheet" href="employee.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">Human Resource Planner</h2>
+      <nav class="nav-menu">
+        <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
+               <button class="nav-btn" onclick="window.location.href='checkin.html'">👤 Check In</button>
+        <button class="nav-btn active" onclick="window.location.href='checkout.html'">👤 Check Out</button>
+
+        <button class="nav-btn"onclick="window.location.href='attendance.html'">🕒 Attendance</button>
+        <button class="nav-btn">⚙️ Settings</button>
+        <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <h1>Check Out</h1>
+      <div class="form-row">
+        <select id="employeeSelect">
+          <option value="">Select Employee</option>
+        </select>
+        <button id="checkOutBtn" class="save-btn">Check Out</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const employeeSelect = document.getElementById("employeeSelect");
+      const checkOutBtn = document.getElementById("checkOutBtn");
+      const logout = document.getElementById("logout");
+
+      const employees = JSON.parse(localStorage.getItem("employees")) || [];
+      const attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+
+      // Fill select dropdown
+      employees.forEach(emp => {
+        const option = document.createElement("option");
+        option.value = emp.sequence;
+        option.textContent = emp.firstName + " " + emp.lastName;
+        employeeSelect.appendChild(option);
+      });
+
+      checkOutBtn.addEventListener("click", () => {
+        const selectedEmp = employeeSelect.value;
+        if (!selectedEmp) return alert("Select an employee!");
+
+        const today = new Date().toISOString().split("T")[0];
+        let record = attendance.find(r => r.date === today);
+        if (!record) {
+          alert("Employee has not checked in today!");
+          return;
+        }
+
+        if (!record.checkedIn.includes(selectedEmp)) {
+          alert("Employee has not checked in yet!");
+          return;
+        }
+
+        if (!record.checkOutTimes) record.checkOutTimes = {};
+        if (record.checkOutTimes[selectedEmp]) {
+          alert("Employee already checked out!");
+          return;
+        }
+
+        const now = new Date();
+        record.checkOutTimes[selectedEmp] = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+        localStorage.setItem("attendance", JSON.stringify(attendance));
+        alert(`✅ Checked out successfully at ${record.checkOutTimes[selectedEmp]}`);
+      });
+
+      logout.addEventListener("click", () => {
+        alert("👋 You have been logged out.");
+        window.location.href = "index.html";
+      });
+    });
+  </script>
+</body>
+</html>

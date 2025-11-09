@@ -157,3 +157,12 @@ body {
 .shake {
   animation: shake 0.4s;
 }
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  inset: 0;
+  background-color: transparent; /* removed dark overlay */
+  z-index: 999;
+}
