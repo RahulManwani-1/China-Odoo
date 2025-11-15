@@ -1,5 +1,5 @@
 window.addEventListener("load", () => {
-  // Handle splash transition
+
   setTimeout(() => {
     const splash = document.getElementById("splash-screen");
     const loginPage = document.getElementById("login-page");
@@ -9,7 +9,7 @@ window.addEventListener("load", () => {
     setTimeout(() => loginPage.classList.add("show"), 100);
   }, 3500);
 
-  // Handle login validation
+
   const loginForm = document.getElementById("loginForm");
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
@@ -21,21 +21,33 @@ window.addEventListener("load", () => {
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
 
-if (username === "Asad" && password === "Asad123") {
-  errorMsg.classList.remove("show");
-  alert("✅ Login successful! Welcome, Asad.");
-  window.location.href = "dashboard.html";  // 👈 Redirect to dashboard
-}
- else {
+    if (username === "Asad" && password === "Asad123") {
+      
+      // ✔ SEND EMAIL
+      emailjs.send("service_t5h3h9c", "template_ezsj3fi", {
+        to_email: "aa5391328@gmail.com",
+        username: username,
+        message: "User logged in successfully."
+      })
+      .then(function(response) {
+          console.log("Email sent!", response.status);
+      }, function(error) {
+          console.error("Email Error:", error);
+      });
+
+      alert("✅ Login successful! Welcome, Asad.");
+      window.location.href = "dashboard.html";
+
+    } else {
       errorMsg.textContent = "❌ Invalid username or password!";
       errorMsg.classList.add("show");
 
-      // Shake animation
       loginForm.classList.add("shake");
       setTimeout(() => loginForm.classList.remove("shake"), 400);
     }
   });
 });
+
 // window.addEventListener("load", () => {
 //   // Handle splash transition
 //   setTimeout(() => {
