@@ -17,6 +17,8 @@
 
         <button class="nav-btn"onclick="window.location.href='attendance.html'">🕒 Attendance</button>
         <button class="nav-btn">⚙️ Settings</button>
+                      <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
+
         <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
       </nav>
     </aside>
@@ -48,34 +50,44 @@
         option.textContent = emp.firstName + " " + emp.lastName;
         employeeSelect.appendChild(option);
       });
+checkInBtn.addEventListener("click", () => {
+  const selectedEmp = employeeSelect.value;
+  if (!selectedEmp) return alert("Select an employee!");
 
-      checkInBtn.addEventListener("click", () => {
-        const selectedEmp = employeeSelect.value;
-        if (!selectedEmp) return alert("Select an employee!");
+  const today = new Date().toISOString().split("T")[0];
+  let record = attendance.find(r => r.date === today);
 
-        const today = new Date().toISOString().split("T")[0];
-        let record = attendance.find(r => r.date === today);
-        if (!record) {
-          record = { date: today, present: 0, late: 0, checkedIn: [] };
-          attendance.push(record);
-        }
+  if (!record) {
+    // Initialize record with checkInTimes and checkOutTimes
+    record = { 
+      date: today, 
+      present: 0, 
+      late: 0, 
+      checkedIn: [], 
+      checkInTimes: {}, 
+      checkOutTimes: {} 
+    };
+    attendance.push(record);
+  }
 
-        if (record.checkedIn.includes(selectedEmp)) {
-          alert("Employee already checked in!");
-          return;
-        }
+  if (record.checkedIn.includes(selectedEmp)) {
+    alert("Employee already checked in!");
+    return;
+  }
 
-        // Example: consider after 9:00 AM as late
-        const now = new Date();
-        const isLate = now.getHours() >= 9 ? 1 : 0;
+  const now = new Date();
+  const isLate = now.getHours() >= 9 ? 1 : 0;
 
-        record.present += 1;
-        record.late += isLate;
-        record.checkedIn.push(selectedEmp);
+  record.present += 1;
+  record.late += isLate;
+  record.checkedIn.push(selectedEmp.toString());  
 
-        localStorage.setItem("attendance", JSON.stringify(attendance));
-        alert("✅ Checked in successfully!");
-      });
+  // SAVE check-in time for this employee
+  record.checkInTimes[selectedEmp] = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+  localStorage.setItem("attendance", JSON.stringify(attendance));
+  alert(`✅ Checked in successfully at ${record.checkInTimes[selectedEmp]}`);
+});
 
       logout.addEventListener("click", () => {
         alert("👋 You have been logged out.");

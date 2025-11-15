@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <style>
+/* Make modal text black */
+#attendanceModal, 
+#attendanceModal * {
+  color: #000000 !important;
+}
+</style>
+
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Attendance | BluePulse</title>
@@ -17,6 +25,8 @@
 
       <button class="nav-btn active">🕒 Attendance</button>
       <button class="nav-btn">⚙️ Settings</button>
+                    <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
+
       <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
     </nav>
   </aside>
