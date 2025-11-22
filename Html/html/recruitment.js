@@ -1,53 +1,161 @@
-document.addEventListener("DOMContentLoaded", function() {
-  // ====== Department Handling ======
+document.addEventListener("DOMContentLoaded", function () {
   const deptForm = document.getElementById("departmentForm");
   const deptTableBody = document.getElementById("departmentTableBody");
 
-  let departments = JSON.parse(localStorage.getItem("departments")) || [];
+  const API_URL = "https://localhost:7228/api/Department";
 
-  function generateDeptSequence() {
-    const num = departments.length + 1;
-    return `Dept/${String(num).padStart(3, '0')}`;
+  // Load Departments From API
+  async function fetchDepartments() {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      renderDepartments(data);
+    } catch (err) {
+      console.error("Error fetching departments:", err);
+    }
   }
 
-  function renderDepartments() {
+  // Render Table
+  function renderDepartments(departments = []) {
     if (!deptTableBody) return;
+
     deptTableBody.innerHTML = "";
-    departments.forEach(dept => {
+
+    departments.forEach((dept) => {
       const row = document.createElement("tr");
+
       row.innerHTML = `
-        <td>${dept.sequence}</td>
-        <td>${dept.name}</td>
-        <td>${dept.manager}</td>
-        <td>${dept.employees}</td>
+        <td>Dept/${String(dept.department_id).padStart(3, "0")}</td>
+        <td>${dept.department_name}</td>
+        <td>${dept.manager_name}</td>
+        <td>${dept.number_of_employees}</td>
+           <td>${dept.parent_department_name || "-"}</td>
+      <td>${new Date(dept.created_on).toLocaleString()}</td>
       `;
+
       deptTableBody.appendChild(row);
     });
   }
 
-  deptForm?.addEventListener("submit", (e) => {
+  // Submit Form → POST To API
+  deptForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const name = document.getElementById("deptName").value.trim();
     const manager = document.getElementById("managerName").value.trim();
     const employees = document.getElementById("numEmployees").value;
 
     if (!name || !manager) return;
 
-    const newDept = {
-      sequence: generateDeptSequence(),
-      name,
-      manager,
-      employees,
+    const payload = {
+      department_name: name,
+      manager_name: manager,
+      number_of_employees: Number(employees),
+      parent_department_name: "",     // optional
+
     };
 
-    departments.push(newDept);
-    localStorage.setItem("departments", JSON.stringify(departments));
-    renderDepartments();
-    deptForm.reset();
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to create department");
+        return;
+      }
+
+      deptForm.reset();
+      fetchDepartments(); // reload table
+    } catch (err) {
+      console.error("Error posting department:", err);
+    }
   });
 
-  renderDepartments();
+  // First Load
+  fetchDepartments();
 });
+
+document.addEventListener("DOMContentLoaded", async function() {
+  const jobForm = document.getElementById("jobForm");
+  const jobTableBody = document.querySelector("#jobTable tbody");
+
+  const API_URL = "https://localhost:7228/api/jobposition";
+
+  let jobPositions = [];
+
+  // Fetch job positions from API
+  const fetchJobs = async () => {
+    try {
+      const res = await fetch(API_URL);
+      jobPositions = await res.json();
+      renderJobs();
+    } catch (err) {
+      console.error("Error fetching job positions:", err);
+    }
+  };
+
+  // Render job positions in table
+  function renderJobs() {
+    jobTableBody.innerHTML = "";
+    jobPositions.forEach(job => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${job.position_id}</td>
+        <td>${job.position_name}</td>
+        <td>${job.department_name}</td>
+        <td>${job.no_of_employees_required}</td>
+        <td>${job.job_description}</td>
+      `;
+      jobTableBody.appendChild(row);
+    });
+  }
+
+  // Handle form submission to POST new job
+  jobForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const positionName = document.getElementById("positionName").value.trim();
+    const department = document.getElementById("department").value.trim();
+    const required = parseInt(document.getElementById("employeesRequired").value);
+    const description = document.getElementById("description").value.trim();
+
+    if (!positionName || !department || !description) return;
+
+    const newJob = {
+      position_name: positionName,
+      department_name: department,
+      no_of_employees_required: required,
+      job_description: description
+    };
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newJob)
+      });
+
+      if (!res.ok) throw new Error("Failed to save job position");
+
+      alert("✅ Job position saved successfully!");
+      jobForm.reset();
+      await fetchJobs();
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to save job position!");
+    }
+  });
+
+  // Initial fetch
+  await fetchJobs();
+});
+
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const appTable = document.getElementById("applicationTable").querySelector("tbody");
@@ -57,12 +165,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelForm = document.getElementById("cancelForm");
   const formTitle = document.getElementById("formTitle");
   const stars = document.querySelectorAll(".star");
+  const interviewerSelect = document.getElementById("interviewerName");
 
-  let applications = JSON.parse(localStorage.getItem("applications")) || [];
+  const deptSelect = document.getElementById("applicantDept");
+  const positionSelect = document.getElementById("applicantPosition");
+
+  const APP_API = "https://localhost:7228/api/RecruitmentApplicant";
+  const EMP_API = "https://localhost:7228/api/employee";
+  const JOB_API = "https://localhost:7228/api/jobposition";
+
+  let applications = [];
+  let employees = [];
+  let jobs = [];
   let editingIndex = null;
   let selectedRating = 0;
 
-  // ⭐ Update Star UI
+  // ⭐ Star rating
   function updateStars(rating) {
     stars.forEach(star => {
       const value = parseInt(star.getAttribute("data-value"));
@@ -70,7 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ⭐ Click event for stars
   stars.forEach(star => {
     star.addEventListener("click", () => {
       selectedRating = parseInt(star.getAttribute("data-value"));
@@ -78,7 +195,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ⭐ Render stars for table
   function renderStars(rating) {
     let html = "";
     for (let i = 1; i <= 5; i++) {
@@ -87,17 +203,80 @@ document.addEventListener("DOMContentLoaded", () => {
     return html;
   }
 
-  // Render all applications in table
+  // 🌐 Fetch Employees for interviewer dropdown
+  async function fetchEmployees() {
+    try {
+      const res = await fetch(EMP_API);
+      employees = await res.json();
+      interviewerSelect.innerHTML = '<option value="">Select Interviewer</option>';
+      employees.forEach(emp => {
+        const option = document.createElement("option");
+        option.value = emp.first_name + " " + emp.last_name;
+        option.textContent = emp.first_name + " " + emp.last_name;
+        interviewerSelect.appendChild(option);
+      });
+    } catch (err) {
+      console.error("Error fetching employees:", err);
+      alert("❌ Failed to load interviewers");
+    }
+  }
+
+  // 🌐 Fetch Job Positions for Department & Position dropdowns
+  async function fetchJobs() {
+    try {
+      const res = await fetch(JOB_API);
+      jobs = await res.json();
+
+      // Clear and populate Department dropdown
+      const deptSet = new Set();
+      deptSelect.innerHTML = '<option value="">Select Department</option>';
+      jobs.forEach(job => {
+        if (!deptSet.has(job.department_name)) {
+          const option = document.createElement("option");
+          option.value = job.department_name;
+          option.textContent = job.department_name;
+          deptSelect.appendChild(option);
+          deptSet.add(job.department_name);
+        }
+      });
+
+      // Clear and populate Position dropdown
+      positionSelect.innerHTML = '<option value="">Select Position</option>';
+      jobs.forEach(job => {
+        const option = document.createElement("option");
+        option.value = job.position_name;
+        option.textContent = job.position_name;
+        positionSelect.appendChild(option);
+      });
+
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      alert("❌ Failed to load job positions");
+    }
+  }
+
+  // 🌐 Fetch existing applications
+  async function fetchApplications() {
+    try {
+      const res = await fetch(APP_API);
+      applications = await res.json();
+      renderApplications();
+    } catch (err) {
+      console.error("Error fetching applications:", err);
+      alert("❌ Failed to fetch applications");
+    }
+  }
+
   function renderApplications() {
     appTable.innerHTML = "";
     applications.forEach((app, index) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${app.sequence}</td>
-        <td>${app.name}</td>
-        <td>${app.position}</td>
-        <td>${app.department}</td>
-        <td>${app.stage}</td>
+        <td>${app.applicant_id}</td>
+        <td>${app.applicant_name}</td>
+        <td>${app.position_name}</td>
+        <td>${app.department_name}</td>
+        <td>${app.status}</td>
         <td>${renderStars(app.rating || 0)}</td>
       `;
       tr.addEventListener("click", () => openForm(index));
@@ -105,13 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Generate unique sequence
-  function generateSequence() {
-    const num = applications.length + 1;
-    return "APP-" + num.toString().padStart(4, "0");
-  }
-
-  // Open form for new or existing record
+  // Open Form
   function openForm(index = null) {
     formContainer.classList.remove("hidden");
     form.reset();
@@ -121,17 +294,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (index !== null) {
       const app = applications[index];
       editingIndex = index;
-      formTitle.textContent = "Edit Application - " + app.sequence;
-      document.getElementById("applicantName").value = app.name;
+      formTitle.textContent = "Edit Application - " + app.applicant_id;
+
+      document.getElementById("applicantName").value = app.applicant_name;
       document.getElementById("applicantEmail").value = app.email;
       document.getElementById("applicantPhone").value = app.phone;
-      document.getElementById("applicantDept").value = app.department;
-      document.getElementById("applicantPosition").value = app.position;
-      document.getElementById("expectedSalary").value = app.salary;
-      document.getElementById("experience").value = app.experience;
+      document.getElementById("applicantCnic").value = app.cnic || "";
+      deptSelect.value = app.department_name;
+      positionSelect.value = app.position_name;
+      document.getElementById("expectedSalary").value = app.expected_salary;
+      document.getElementById("experience").value = app.experience_years;
       document.getElementById("qualification").value = app.qualification;
-      document.getElementById("stageSelect").value = app.stage;
+      document.getElementById("stageSelect").value = app.status;
       document.getElementById("notes").value = app.notes;
+      interviewerSelect.value = app.interviewer_name || "";
       selectedRating = app.rating || 0;
       updateStars(selectedRating);
     } else {
@@ -140,100 +316,58 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Event: Add new
   addNewApp.addEventListener("click", () => openForm());
+  cancelForm.addEventListener("click", () => formContainer.classList.add("hidden"));
 
-  // Event: Cancel
-  cancelForm.addEventListener("click", () => {
-    formContainer.classList.add("hidden");
-  });
-
-  // Event: Submit form
-  form.addEventListener("submit", (e) => {
+  // Submit Form
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const newApp = {
-      sequence: editingIndex === null ? generateSequence() : applications[editingIndex].sequence,
-      name: document.getElementById("applicantName").value,
+      applicant_name: document.getElementById("applicantName").value,
       email: document.getElementById("applicantEmail").value,
       phone: document.getElementById("applicantPhone").value,
-      department: document.getElementById("applicantDept").value,
-      position: document.getElementById("applicantPosition").value,
-      salary: document.getElementById("expectedSalary").value,
-      experience: document.getElementById("experience").value,
+      cnic: document.getElementById("applicantCnic").value,
+      department_name: deptSelect.value,
+      position_name: positionSelect.value,
+      expected_salary: parseFloat(document.getElementById("expectedSalary").value),
+      experience_years: parseInt(document.getElementById("experience").value),
       qualification: document.getElementById("qualification").value,
-      stage: document.getElementById("stageSelect").value,
+      status: document.getElementById("stageSelect").value,
       notes: document.getElementById("notes").value,
       rating: selectedRating,
+      interviewer_name: interviewerSelect.value,
+      pdf_file: null,
+      created_on: new Date().toISOString()
     };
 
-    if (editingIndex === null) {
-      applications.push(newApp);
-    } else {
-      applications[editingIndex] = newApp;
+    try {
+      if (editingIndex !== null) {
+        const appId = applications[editingIndex].applicant_id;
+        await fetch(`${APP_API}/${appId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newApp)
+        });
+        alert("✏️ Application updated successfully!");
+      } else {
+        await fetch(APP_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newApp)
+        });
+        alert("✅ Application created successfully!");
+      }
+      await fetchApplications();
+      formContainer.classList.add("hidden");
+    } catch (err) {
+      console.error("Error saving application:", err);
+      alert("❌ Failed to save application!");
     }
-
-    localStorage.setItem("applications", JSON.stringify(applications));
-    formContainer.classList.add("hidden");
-    renderApplications();
   });
 
-  renderApplications();
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-  const jobForm = document.getElementById("jobForm");
-  const jobTableBody = document.querySelector("#jobTable tbody");
-
-  // Load saved job positions
-  let jobPositions = JSON.parse(localStorage.getItem("jobPositions")) || [];
-
-  // Function to generate unique sequence
-  function generateSequence() {
-    const num = jobPositions.length + 1;
-    return `Job/Pos/${String(num).padStart(3, '0')}`;
-  }
-
-  // Render job positions in table
-  function renderJobs() {
-    jobTableBody.innerHTML = "";
-    jobPositions.forEach(job => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${job.sequence}</td>
-        <td>${job.position}</td>
-        <td>${job.department}</td>
-        <td>${job.required}</td>
-        <td>${job.description}</td>
-      `;
-      jobTableBody.appendChild(row);
-    });
-  }
-
-  // On form submit
-  jobForm?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const position = document.getElementById("positionName").value.trim();
-    const department = document.getElementById("department").value.trim();
-    const required = document.getElementById("employeesRequired").value;
-    const description = document.getElementById("description").value.trim();
-
-    if (!position || !department || !description) return;
-
-    const newJob = {
-      sequence: generateSequence(),
-      position,
-      department,
-      required,
-      description,
-    };
-
-    jobPositions.push(newJob);
-    localStorage.setItem("jobPositions", JSON.stringify(jobPositions));
-    renderJobs();
-
-    jobForm.reset();
-  });
-
-  renderJobs();
+  // Initial fetches
+  fetchEmployees();
+  fetchJobs();
+  fetchApplications();
 });

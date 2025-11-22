@@ -15,6 +15,7 @@
         <button class="nav-btn" onclick="window.location.href='job_positions.html'">💼 Job Positions</button>
         <button class="nav-btn active" onclick="window.location.href='recruitment_process.html'">📋 Recruitment</button>
                      <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
+    <button class="nav-btn" onclick="window.location.href='employee_contracts.html'">📄 Employee Contracts</button>
 
         <button class="nav-btn logout-btn" onclick="window.location.href='dashboard.html'">🚪 Logout</button>
       </nav>
@@ -57,16 +58,24 @@
               <label>Phone</label>
               <input type="text" id="applicantPhone">
             </div>
+              <div class="form-group">
+    <label>CNIC</label>
+    <input type="text" id="applicantCnic" placeholder="42101-1234567-1" required>
+  </div>
           </div>
 
           <div class="form-row">
-            <div class="form-group">
+               <div class="form-group">
               <label>Department</label>
-              <input type="text" id="applicantDept">
+              <select id="applicantDept" required>
+                <option value="">Select Department</option>
+              </select>
             </div>
             <div class="form-group">
               <label>Job Position</label>
-              <input type="text" id="applicantPosition">
+              <select id="applicantPosition" required>
+                <option value="">Select Position</option>
+              </select>
             </div>
             <div class="form-group">
               <label>Expected Salary</label>
@@ -97,6 +106,13 @@
                 <option>Generate Offer Letter</option>
               </select>
             </div>
+            <div class="form-group">
+  <label>Interviewer</label>
+  <select id="interviewerName" required>
+    <option value="">Select Interviewer</option>
+  </select>
+</div>
+
           </div>
 
           <div class="form-row">

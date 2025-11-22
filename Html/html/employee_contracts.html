@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Contracts | BluePulse</title>
+  <link rel="stylesheet" href="recruitment.css"> <!-- Reuse recruitment CSS -->
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">Human Resource Planner</h2>
+      <nav class="nav-menu">
+        <button class="nav-btn" onclick="window.location.href='departments.html'">🏢 Departments</button>
+        <button class="nav-btn" onclick="window.location.href='job_positions.html'">💼 Job Positions</button>
+        <button class="nav-btn" onclick="window.location.href='recruitment_process.html'">📋 Recruitment</button>
+        <button class="nav-btn active" onclick="window.location.href='employee_contracts.html'">📄 Contracts</button>
+
+        <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
+        <button class="nav-btn logout-btn" onclick="window.location.href='dashboard.html'">🚪 Logout</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <h1>Employee Contracts</h1>
+
+      <!-- Tree View -->
+      <table class="data-table" id="contractTable">
+        <thead>
+          <tr>
+            <th>Sequence</th>
+            <th>Employee Name</th>
+            <th>Contract Type</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Salary</th>
+            <th>Working Hours</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <button class="save-btn" id="addNewContract">➕ New Contract</button>
+
+      <!-- Form Section -->
+      <div id="contractFormContainer" class="hidden">
+        <h2 id="contractFormTitle">Create Contract</h2>
+        <form id="contractForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Employee Name</label>
+              <input type="text" id="employeeName" required>
+            </div>
+            <div class="form-group">
+              <label>Contract Type</label>
+              <select id="contractType" required>
+                <option value="Permanent">Permanent</option>
+                <option value="Temporary">Temporary</option>
+                <option value="Internship">Internship</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="date" id="startDate" required>
+            </div>
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="date" id="endDate">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Salary</label>
+              <input type="number" id="salary" required>
+            </div>
+            <div class="form-group">
+              <label>Working Hours</label>
+              <input type="text" id="workingHours" placeholder="e.g. 9am-5pm">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Status</label>
+              <select id="status">
+                <option value="Active">Active</option>
+                <option value="Expired">Expired</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea id="notes" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="save-btn">💾 Save Contract</button>
+            <button type="button" class="cancel-btn" id="cancelContractForm">❌ Cancel</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="employee_contracts.js"></script>
+</body>
+</html>
