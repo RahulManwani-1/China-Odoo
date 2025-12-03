@@ -121,10 +121,13 @@
 </div>
 
 
-    <div class="form-group">
-      <label>Position Name</label>
-      <input type="text" id="position_name" />
-    </div>
+<div class="form-group">
+  <label>Position</label>
+  <select id="position_name" required>
+    <option value="">Select Position</option>
+  </select>
+</div>
+
   </div>
 
   <!-- ROW 8 -->
@@ -151,14 +154,15 @@
     </div>
   </div>
 
-  <!-- ROW 10 -->
-  <div class="form-row">
-    <div class="form-group">
-      <label>Status</label>
-      <input type="text" id="status" />
-    </div>
-  </div>
-
+<div class="form-group">
+  <label>Status</label>
+  <select id="status" required>
+    <option value="">Select Status</option>
+    <option value="Active">Active</option>
+    <option value="Non Active">Non Active</option>
+  </select>
+</div>
+  
   <!-- Save / Cancel -->
   <div class="form-actions">
     <button type="submit" class="save-btn">💾 Save Employee</button>

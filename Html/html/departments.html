@@ -31,10 +31,20 @@
             <label>Department Name</label>
             <input type="text" id="deptName" placeholder="e.g. Human Resources" required>
           </div>
-          <div class="form-group">
-            <label>Manager</label>
-            <input type="text" id="managerName" placeholder="e.g. John Doe" required>
-          </div>
+         <div class="form-group">
+      <label>Manager</label>
+      <select id="managerName" required>
+        <option value="">Select Manager</option>
+        <!-- Populated dynamically from employees API -->
+      </select>
+    </div>
+        <div class="form-group">
+      <label>Parent Department</label>
+      <select id="parentDept">
+        <option value="">Select Parent Department</option>
+        <!-- Populated dynamically from departments API -->
+      </select>
+    </div>
           <div class="form-group">
             <label>No. of Employees</label>
             <input type="number" id="numEmployees" min="0" value="0" required>

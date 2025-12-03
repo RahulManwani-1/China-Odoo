@@ -4,6 +4,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const addNewBtn = document.getElementById("addNewBtn");
   const cancelBtn = document.getElementById("cancelBtn");
   const logout = document.getElementById("logout");
+const positionSelect = document.getElementById("position_name");
+
+const fetchPositions = async () => {
+  try {
+    const res = await fetch("https://localhost:7228/api/jobposition"); // your positions API
+    const positions = await res.json();
+
+    positionSelect.innerHTML = '<option value="">Select Position</option>';
+
+    positions.forEach(pos => {
+      const option = document.createElement("option");
+      option.value = pos.position_name; // use the name or ID if needed
+      option.textContent = pos.position_name;
+      positionSelect.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Error fetching positions:", err);
+  }
+};
+
+fetchPositions();
 
   let employees = [];
   let editIndex = null; // Track currently edited employee

@@ -1,6 +1,48 @@
 document.addEventListener("DOMContentLoaded", function () {
   const deptForm = document.getElementById("departmentForm");
   const deptTableBody = document.getElementById("departmentTableBody");
+  const parentDeptSelect = document.getElementById("parentDept");
+const managerSelect = document.getElementById("managerName");
+let employees = [];
+let departments = [];
+
+// Fetch employees for manager dropdown
+async function fetchEmployees() {
+  try {
+    const res = await fetch("https://localhost:7228/api/employee");
+    employees = await res.json();
+    managerSelect.innerHTML = '<option value="">Select Manager</option>';
+    employees.forEach(emp => {
+      const option = document.createElement("option");
+      option.value = emp.first_name + " " + emp.last_name;
+      option.textContent = emp.first_name + " " + emp.last_name;
+      managerSelect.appendChild(option);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// Fetch departments for parent department dropdown
+async function fetchParentDepartments() {
+  try {
+    const res = await fetch("https://localhost:7228/api/Department");
+    departments = await res.json();
+    parentDeptSelect.innerHTML = '<option value="">Select Parent Department</option>';
+    departments.forEach(dept => {
+      const option = document.createElement("option");
+      option.value = dept.department_name;
+      option.textContent = dept.department_name;
+      parentDeptSelect.appendChild(option);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// Call both on load
+fetchEmployees();
+fetchParentDepartments();
 
   const API_URL = "https://localhost:7228/api/Department";
 
@@ -37,44 +79,50 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Submit Form → POST To API
-  deptForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+deptForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const name = document.getElementById("deptName").value.trim();
-    const manager = document.getElementById("managerName").value.trim();
-    const employees = document.getElementById("numEmployees").value;
+  const name = document.getElementById("deptName").value.trim();
+  const manager = managerSelect.value.trim();
+  const employeesCount = parseInt(document.getElementById("numEmployees").value);
+  const parentDept = parentDeptSelect.value;
 
-    if (!name || !manager) return;
+  // Validation
+  if (!name || !manager) {
+    alert("Please fill department name and manager");
+    return;
+  }
 
-    const payload = {
-      department_name: name,
-      manager_name: manager,
-      number_of_employees: Number(employees),
-      parent_department_name: "",     // optional
+  if (employeesCount <= 0) {
+    alert("Number of employees must be greater than 0");
+    return;
+  }
 
-    };
+  const payload = {
+    department_name: name,
+    manager_name: manager,
+    number_of_employees: employeesCount,
+    parent_department_name: parentDept || null,
+  };
 
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+  try {
+    const res = await fetch("https://localhost:7228/api/Department", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      if (!res.ok) {
-        console.error("Failed to create department");
-        return;
-      }
+    if (!res.ok) throw new Error("Failed to save department");
 
-      deptForm.reset();
-      fetchDepartments(); // reload table
-    } catch (err) {
-      console.error("Error posting department:", err);
-    }
-  });
+    alert("✅ Department saved successfully!");
+    deptForm.reset();
+    fetchDepartments();
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed to save department!");
+  }
+});
+
 
   // First Load
   fetchDepartments();
@@ -84,14 +132,35 @@ document.addEventListener("DOMContentLoaded", async function() {
   const jobForm = document.getElementById("jobForm");
   const jobTableBody = document.querySelector("#jobTable tbody");
 
-  const API_URL = "https://localhost:7228/api/jobposition";
+  const deptSelect = document.getElementById("jobDept"); // Make sure your HTML <select id="jobDept">
+  let departments = [];
 
+  // Fetch departments for Job Department dropdown
+  async function fetchDepartmentsForJob() {
+    try {
+      const res = await fetch("https://localhost:7228/api/Department");
+      departments = await res.json();
+      deptSelect.innerHTML = '<option value="">Select Department</option>';
+      departments.forEach(dept => {
+        const option = document.createElement("option");
+        option.value = dept.department_name;
+        option.textContent = dept.department_name;
+        deptSelect.appendChild(option);
+      });
+    } catch (err) {
+      console.error("Error fetching departments for job:", err);
+    }
+  }
+
+  await fetchDepartmentsForJob();
+
+  const JOB_API = "https://localhost:7228/api/jobposition";
   let jobPositions = [];
 
-  // Fetch job positions from API
+  // Fetch job positions
   const fetchJobs = async () => {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(JOB_API);
       jobPositions = await res.json();
       renderJobs();
     } catch (err) {
@@ -99,42 +168,56 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
   };
 
-  // Render job positions in table
-  function renderJobs() {
-    jobTableBody.innerHTML = "";
-    jobPositions.forEach(job => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${job.position_id}</td>
-        <td>${job.position_name}</td>
-        <td>${job.department_name}</td>
-        <td>${job.no_of_employees_required}</td>
-        <td>${job.job_description}</td>
-      `;
-      jobTableBody.appendChild(row);
-    });
-  }
+  // Render job positions table
+function renderJobs() {
+  jobTableBody.innerHTML = "";
 
-  // Handle form submission to POST new job
+  jobPositions.forEach(job => {
+    const encodedName = encodeURIComponent(job.position_name);
+    const shortUrl = `http://127.0.0.1:5500/Html/html/recruitment_application.html?position=${encodedName}`;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${job.position_id}</td>
+      <td>${job.position_name}</td>
+      <td>${job.department_name}</td>
+      <td>${job.no_of_employees_required}</td>
+      <td>${job.job_description}</td>
+      <td>
+        <a href="${shortUrl}" target="_blank" style="color:blue; text-decoration:underline;">
+          Open Form
+        </a>
+      </td>
+    `;
+    jobTableBody.appendChild(row);
+  });
+}
+
+
+  // Submit Job Form
   jobForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const positionName = document.getElementById("positionName").value.trim();
-    const department = document.getElementById("department").value.trim();
+    const department = deptSelect.value;
     const required = parseInt(document.getElementById("employeesRequired").value);
     const description = document.getElementById("description").value.trim();
 
-    if (!positionName || !department || !description) return;
+    // Validation
+    if (!positionName || !department || !description || isNaN(required) || required <= 0) {
+      alert("Please fill all required fields and number of employees must be greater than 0.");
+      return;
+    }
 
     const newJob = {
       position_name: positionName,
       department_name: department,
       no_of_employees_required: required,
-      job_description: description
+      job_description: description,
     };
 
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch(JOB_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newJob)
@@ -156,7 +239,6 @@ document.addEventListener("DOMContentLoaded", async function() {
 });
 
 
-
 document.addEventListener("DOMContentLoaded", () => {
   const appTable = document.getElementById("applicationTable").querySelector("tbody");
   const addNewApp = document.getElementById("addNewApp");
@@ -173,7 +255,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const APP_API = "https://localhost:7228/api/RecruitmentApplicant";
   const EMP_API = "https://localhost:7228/api/employee";
   const JOB_API = "https://localhost:7228/api/jobposition";
-
+const pdfInput = document.getElementById("pdfUpload");
+const pdfPreview = document.getElementById("pdfPreview");
+let uploadedPDFBase64 = null;
+// Handle PDF selection
+pdfInput.addEventListener("change", () => {
+  const file = pdfInput.files[0];
+  if (file && file.type === "application/pdf") {
+    const reader = new FileReader();
+    reader.onload = () => {
+      uploadedPDFBase64 = reader.result.split(',')[1]; // Get Base64 without prefix
+      pdfPreview.innerHTML = `
+        <embed src="${reader.result}" type="application/pdf" width="100%" height="300px">
+      `;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    uploadedPDFBase64 = null;
+    pdfPreview.innerHTML = "❌ Invalid file type. Please upload a PDF.";
+  }
+});
   let applications = [];
   let employees = [];
   let jobs = [];
@@ -310,10 +411,22 @@ document.addEventListener("DOMContentLoaded", () => {
       interviewerSelect.value = app.interviewer_name || "";
       selectedRating = app.rating || 0;
       updateStars(selectedRating);
-    } else {
-      editingIndex = null;
-      formTitle.textContent = "Create Application";
-    }
+      
+   
+  // ✅ Show previously uploaded PDF if exists
+  if (app.pdf_file) {
+    uploadedPDFBase64 = app.pdf_file;
+    pdfPreview.innerHTML = `<embed src="data:application/pdf;base64,${app.pdf_file}" type="application/pdf" width="100%" height="300px">`;
+  } else {
+    uploadedPDFBase64 = null;
+    pdfPreview.innerHTML = "";
+  }
+} else {
+  editingIndex = null;
+  formTitle.textContent = "Create Application";
+  uploadedPDFBase64 = null;
+  pdfPreview.innerHTML = "";
+}
   }
 
   addNewApp.addEventListener("click", () => openForm());
@@ -337,7 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
       notes: document.getElementById("notes").value,
       rating: selectedRating,
       interviewer_name: interviewerSelect.value,
-      pdf_file: null,
+  pdf_file: uploadedPDFBase64, // ✅ Pass Base64 here
       created_on: new Date().toISOString()
     };
 

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f3f3;
+            margin: 0;
+            padding: 20px;
+        }
+        .form-box {
+            background: #fff;
+            padding: 25px;
+            width: 450px;
+            margin: 50px auto;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px #ddd;
+        }
+        .form-box h2 { text-align: center; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+        }
+        button:hover { background:#45a049; }
+        .message {
+            text-align: center;
+            margin-top: 100px;
+            font-size: 24px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<div id="message" class="message hidden"></div>
+
+<div id="formContainer" class="form-box hidden">
+    <h2>Job Application</h2>
+    <form id="applyForm">
+        <input type="text" id="applicant_name" placeholder="Full Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="phone" placeholder="Phone" required>
+        <input type="text" id="cnic" placeholder="CNIC">
+
+        <input type="text" id="position_name" readonly>
+        <input type="text" id="department_name" readonly>
+
+        <input type="number" id="expected_salary" placeholder="Expected Salary">
+        <input type="number" id="experience_years" placeholder="Experience (years)">
+        <input type="text" id="qualification" placeholder="Qualification">
+
+        <textarea id="notes" placeholder="Additional Notes"></textarea>
+
+        <button type="submit">Submit Application</button>
+    </form>
+</div>
+
+<script src="recruitment_application.js"></script>
+</body>
+</html>
