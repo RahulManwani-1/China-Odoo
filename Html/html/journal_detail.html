@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Journal Detail</title>
+  <link rel="stylesheet" href="employee.css" />
+</head>
+<body>
+
+<div class="dashboard-container">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Accounting</h2>
+    <nav class="nav-menu">
+      <button class="nav-btn" onclick="window.location.href='journal_entries.html'">⬅ Back</button>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <h1>Journal Entry</h1>
+
+    <form class="employee-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Journal Name</label>
+          <input type="text" id="journal_name" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Journal Type</label>
+          <input type="text" id="journal_type" readonly />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Entry Date</label>
+          <input type="text" id="entry_date" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Reference</label>
+          <input type="text" id="reference" readonly />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="description" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Source Module</label>
+          <input type="text" id="source_module" readonly />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Account ID</label>
+          <input type="text" id="account_id" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Employee ID</label>
+          <input type="text" id="employee_id" readonly />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Debit</label>
+          <input type="text" id="debit" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Credit</label>
+          <input type="text" id="credit" readonly />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Created At</label>
+          <input type="text" id="created_at" readonly />
+        </div>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const API_URL = "http://localhost:5228/api/Journal";
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (!id) {
+    alert("Invalid Journal ID");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/${id}`);
+    const j = await res.json();
+
+    document.getElementById("journal_name").value = j.journal_name;
+    document.getElementById("journal_type").value = j.journal_type;
+    document.getElementById("entry_date").value = j.entry_date.split("T")[0];
+    document.getElementById("reference").value = j.reference ?? "";
+    document.getElementById("description").value = j.description ?? "";
+    document.getElementById("source_module").value = j.source_module ?? "";
+    document.getElementById("account_id").value = j.account_id;
+    document.getElementById("employee_id").value = j.employee_id ?? "";
+    document.getElementById("debit").value = j.debit;
+    document.getElementById("credit").value = j.credit;
+    document.getElementById("created_at").value = j.created_at.split("T")[0];
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed to load journal");
+  }
+});
+</script>
+
+</body>
+</html>

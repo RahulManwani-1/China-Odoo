@@ -1,69 +1,85 @@
+  function goBack() {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "dashboard.html";
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+
   const deptForm = document.getElementById("departmentForm");
   const deptTableBody = document.getElementById("departmentTableBody");
   const parentDeptSelect = document.getElementById("parentDept");
-const managerSelect = document.getElementById("managerName");
-let employees = [];
-let departments = [];
+  const managerSelect = document.getElementById("managerName");
 
-// Fetch employees for manager dropdown
-async function fetchEmployees() {
-  try {
-    const res = await fetch("https://localhost:7228/api/employee");
-    employees = await res.json();
-    managerSelect.innerHTML = '<option value="">Select Manager</option>';
-    employees.forEach(emp => {
-      const option = document.createElement("option");
-      option.value = emp.first_name + " " + emp.last_name;
-      option.textContent = emp.first_name + " " + emp.last_name;
-      managerSelect.appendChild(option);
-    });
-  } catch (err) {
-    console.error(err);
-  }
-}
+  const API_URL = "http://localhost:5228/api/Department";
+  const EMP_API = "http://localhost:5228/api/employee";
+const JOB_API = "http://localhost:5228/api/jobposition";
 
-// Fetch departments for parent department dropdown
-async function fetchParentDepartments() {
-  try {
-    const res = await fetch("https://localhost:7228/api/Department");
-    departments = await res.json();
-    parentDeptSelect.innerHTML = '<option value="">Select Parent Department</option>';
-    departments.forEach(dept => {
-      const option = document.createElement("option");
-      option.value = dept.department_name;
-      option.textContent = dept.department_name;
-      parentDeptSelect.appendChild(option);
-    });
-  } catch (err) {
-    console.error(err);
-  }
-}
+  let employees = [];
+  let departments = [];
+  let editDepartmentId = null;
 
-// Call both on load
-fetchEmployees();
-fetchParentDepartments();
-
-  const API_URL = "https://localhost:7228/api/Department";
-
-  // Load Departments From API
-  async function fetchDepartments() {
+  /* =========================
+     FETCH EMPLOYEES
+  ========================= */
+  async function fetchEmployees() {
     try {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      renderDepartments(data);
+      const res = await fetch(EMP_API);
+      employees = await res.json();
+
+      managerSelect.innerHTML = '<option value="">Select Manager</option>';
+      employees.forEach(emp => {
+        const opt = document.createElement("option");
+        opt.value = `${emp.first_name} ${emp.last_name}`;
+        opt.textContent = `${emp.first_name} ${emp.last_name}`;
+        managerSelect.appendChild(opt);
+      });
     } catch (err) {
-      console.error("Error fetching departments:", err);
+      console.error("Employee fetch error", err);
     }
   }
 
-  // Render Table
-  function renderDepartments(departments = []) {
-    if (!deptTableBody) return;
+  /* =========================
+     FETCH PARENT DEPARTMENTS
+  ========================= */
+  async function fetchParentDepartments() {
+    try {
+      const res = await fetch(API_URL);
+      departments = await res.json();
 
+      parentDeptSelect.innerHTML =
+        '<option value="">Select Parent Department</option>';
+
+      departments.forEach(dept => {
+        const opt = document.createElement("option");
+        opt.value = dept.department_name;
+        opt.textContent = dept.department_name;
+        parentDeptSelect.appendChild(opt);
+      });
+    } catch (err) {
+      console.error("Parent dept fetch error", err);
+    }
+  }
+
+  /* =========================
+     FETCH & RENDER DEPARTMENTS
+  ========================= */
+  async function fetchDepartments() {
+    try {
+      const res = await fetch(API_URL);
+      departments = await res.json(); // ✅ global array update
+      renderDepartments();
+    } catch (err) {
+      console.error("Department fetch error", err);
+    }
+  }
+
+  function renderDepartments() {
     deptTableBody.innerHTML = "";
 
-    departments.forEach((dept) => {
+    departments.forEach(dept => {
       const row = document.createElement("tr");
 
       row.innerHTML = `
@@ -71,75 +87,193 @@ fetchParentDepartments();
         <td>${dept.department_name}</td>
         <td>${dept.manager_name}</td>
         <td>${dept.number_of_employees}</td>
-           <td>${dept.parent_department_name || "-"}</td>
-      <td>${new Date(dept.created_on).toLocaleString()}</td>
+        <td>${dept.parent_department_name || "-"}</td>
+        <td>${new Date(dept.created_on).toLocaleString()}</td>
+        <td>
+          <button class="edit-btn" onclick="editDepartment(${dept.department_id})">✏️</button>
+          <button class="delete-btn" onclick="deleteDepartment(${dept.department_id})">🗑️</button>
+        </td>
       `;
 
       deptTableBody.appendChild(row);
     });
   }
 
-deptForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
+  /* =========================
+     CREATE / UPDATE
+  ========================= */
+  deptForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-  const name = document.getElementById("deptName").value.trim();
-  const manager = managerSelect.value.trim();
-  const employeesCount = parseInt(document.getElementById("numEmployees").value);
-  const parentDept = parentDeptSelect.value;
+    const name = document.getElementById("deptName").value.trim();
+    const manager = managerSelect.value.trim();
+    const parentDept = parentDeptSelect.value;
 
-  // Validation
-  if (!name || !manager) {
-    alert("Please fill department name and manager");
-    return;
-  }
+    if (!name) {
+      alert("Please fill department name and manager");
+      return;
+    }
 
-  if (employeesCount <= 0) {
-    alert("Number of employees must be greater than 0");
-    return;
-  }
+    if (parentDept && parentDept.toLowerCase() === name.toLowerCase()) {
+      alert("Department and Parent Department cannot be same");
+      return;
+    }
 
-  const payload = {
-    department_name: name,
-    manager_name: manager,
-    number_of_employees: employeesCount,
-    parent_department_name: parentDept || null,
+    const duplicate = departments.some(dept =>
+      dept.department_name.toLowerCase() === name.toLowerCase() &&
+      (dept.parent_department_name || "").toLowerCase() ===
+      (parentDept || "").toLowerCase() &&
+      dept.department_id !== editDepartmentId
+    );
+
+    if (duplicate) {
+      alert("This department already exists under the same parent");
+      return;
+    }
+
+    const payload = {
+      department_name: name,
+      manager_name: manager,
+      parent_department_name: parentDept || null
+    };
+
+    const url = editDepartmentId
+      ? `${API_URL}/${editDepartmentId}`
+      : API_URL;
+
+    const method = editDepartmentId ? "PUT" : "POST";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Save failed");
+
+      alert(editDepartmentId ? "Department updated!" : "Department saved!");
+
+      deptForm.reset();
+      editDepartmentId = null;
+      document.querySelector(".save-btn").innerText = "💾 Save Department";
+
+      fetchDepartments();
+      fetchParentDepartments();
+    } catch (err) {
+      console.error(err);
+      alert("Save failed");
+    }
+  });
+
+  /* =========================
+     EDIT
+  ========================= */
+  window.editDepartment = function (id) {
+    const dept = departments.find(d => d.department_id === id);
+    if (!dept) return;
+
+    document.getElementById("deptName").value = dept.department_name;
+    managerSelect.value = dept.manager_name;
+    parentDeptSelect.value = dept.parent_department_name || "";
+
+    editDepartmentId = id;
+    document.querySelector(".save-btn").innerText = "✏️ Update Department";
   };
 
+  /* =========================
+     DELETE
+  ========================= */
+window.deleteDepartment = async function (id) {
+
+  const dept = departments.find(d => d.department_id === id);
+  if (!dept) return;
+
   try {
-    const res = await fetch("https://localhost:7228/api/Department", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    /* 🔴 STEP 1: CHECK IF THIS DEPARTMENT IS A PARENT */
+    const hasChildDepartments = departments.some(
+      d => d.parent_department_name === dept.department_name
+    );
 
-    if (!res.ok) throw new Error("Failed to save department");
+    if (hasChildDepartments) {
+      alert(
+        `❌ Cannot delete department!\n\n` +
+        `"${dept.department_name}" is a parent of other departments.\n` +
+        `Please delete or reassign child departments first.`
+      );
+      return;
+    }
 
-    alert("✅ Department saved successfully!");
-    deptForm.reset();
+    /* 🔴 STEP 2: CHECK JOB POSITIONS */
+    const jobRes = await fetch(JOB_API);
+    const jobs = await jobRes.json();
+
+    const hasJobs = jobs.some(
+      job => job.department_name === dept.department_name
+    );
+
+    if (hasJobs) {
+      alert(
+        `❌ Cannot delete department!\n\n` +
+        `Job positions exist under "${dept.department_name}".\n` +
+        `Please delete or move job positions first.`
+      );
+      return;
+    }
+
+    /* ✅ STEP 3: CONFIRM DELETE */
+    if (!confirm("Are you sure you want to delete this department?")) return;
+
+    /* ✅ STEP 4: DELETE */
+    const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Delete failed");
+
+    alert("✅ Department deleted successfully!");
     fetchDepartments();
+    fetchParentDepartments();
+
   } catch (err) {
     console.error(err);
-    alert("❌ Failed to save department!");
+    alert("❌ Failed to delete department");
   }
-});
+};
 
 
-  // First Load
+
+  /* =========================
+     INITIAL LOAD
+  ========================= */
+  fetchEmployees();
   fetchDepartments();
+  fetchParentDepartments();
+
 });
 
-document.addEventListener("DOMContentLoaded", async function() {
+document.addEventListener("DOMContentLoaded", async function () {
+
   const jobForm = document.getElementById("jobForm");
   const jobTableBody = document.querySelector("#jobTable tbody");
+  const deptSelect = document.getElementById("jobDept");
 
-  const deptSelect = document.getElementById("jobDept"); // Make sure your HTML <select id="jobDept">
+  const JOB_API = "http://localhost:5228/api/jobposition";
+  const DEPT_API = "http://localhost:5228/api/Department";
+  const EMP_API = "http://localhost:5228/api/employee";
+
+let employees = [];
+
+
   let departments = [];
+  let jobPositions = [];
+  let editJobId = null;
 
-  // Fetch departments for Job Department dropdown
+  /* ==============================
+     1️⃣ FETCH DEPARTMENTS
+  ============================== */
   async function fetchDepartmentsForJob() {
     try {
-      const res = await fetch("https://localhost:7228/api/Department");
+      const res = await fetch(DEPT_API);
       departments = await res.json();
+
       deptSelect.innerHTML = '<option value="">Select Department</option>';
       departments.forEach(dept => {
         const option = document.createElement("option");
@@ -148,45 +282,74 @@ document.addEventListener("DOMContentLoaded", async function() {
         deptSelect.appendChild(option);
       });
     } catch (err) {
-      console.error("Error fetching departments for job:", err);
+      console.error("Department fetch error:", err);
+    }
+  }
+async function fetchEmployees() {
+  try {
+    const res = await fetch(EMP_API);
+    employees = await res.json();
+  } catch (err) {
+    console.error("Employee fetch error:", err);
+  }
+}
+function getEmployeeCount(positionName) {
+  return employees.filter(emp =>
+    emp.position_name &&
+    emp.position_name.toLowerCase() === positionName.toLowerCase()
+  ).length;
+}
+
+  /* ==============================
+     2️⃣ FETCH JOB POSITIONS
+  ============================== */
+  async function fetchJobs() {
+    try {
+      const res = await fetch(JOB_API);
+      jobPositions = await res.json();   // ✅ GLOBAL UPDATE
+      renderJobs();
+    } catch (err) {
+      console.error("Job fetch error:", err);
     }
   }
 
-  await fetchDepartmentsForJob();
-
-  const JOB_API = "https://localhost:7228/api/jobposition";
-  let jobPositions = [];
-
-  // Fetch job positions
-  const fetchJobs = async () => {
-    try {
-      const res = await fetch(JOB_API);
-      jobPositions = await res.json();
-      renderJobs();
-    } catch (err) {
-      console.error("Error fetching job positions:", err);
-    }
-  };
-
-  // Render job positions table
+  /* ==============================
+     3️⃣ RENDER JOB TABLE
+  ============================== */
 function renderJobs() {
   jobTableBody.innerHTML = "";
 
   jobPositions.forEach(job => {
     const encodedName = encodeURIComponent(job.position_name);
-    const shortUrl = `http://127.0.0.1:5500/Html/html/recruitment_application.html?position=${encodedName}`;
+    const shortUrl =
+      `http://127.0.0.1:5500/Html/html/recruitment_application.html?position=${encodedName}`;
+
+    const expireOn = job.expire_on
+      ? new Date(job.expire_on).toLocaleString()
+      : "Not Set";
+
+    const employeeCount = getEmployeeCount(job.position_name);
 
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${job.position_id}</td>
       <td>${job.position_name}</td>
       <td>${job.department_name}</td>
-      <td>${job.no_of_employees_required}</td>
       <td>${job.job_description}</td>
+      <td>${expireOn}</td>
+      <td>${job.sources || "-"}</td>
       <td>
-        <a href="${shortUrl}" target="_blank" style="color:blue; text-decoration:underline;">
-          Open Form
-        </a>
+        <a href="${shortUrl}" target="_blank" style="color:blue">Open Form</a>
+      </td>
+      <td style="text-align:center;font-weight:bold">
+        ${employeeCount}
+      </td>
+      <td>
+        <button class="edit-btn" onclick="editJob(${job.position_id})">✏️</button>
+        <button class="delete-btn"
+          onclick="deleteJob(${job.position_id}, ${employeeCount})">
+          🗑️
+        </button>
       </td>
     `;
     jobTableBody.appendChild(row);
@@ -194,48 +357,120 @@ function renderJobs() {
 }
 
 
-  // Submit Job Form
-  jobForm?.addEventListener("submit", async (e) => {
+  /* ==============================
+     4️⃣ SUBMIT (CREATE / UPDATE)
+  ============================== */
+  jobForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const positionName = document.getElementById("positionName").value.trim();
     const department = deptSelect.value;
-    const required = parseInt(document.getElementById("employeesRequired").value);
     const description = document.getElementById("description").value.trim();
+    const expireOn = document.getElementById("expireOn").value;
+    const source = document.getElementById("source").value.trim();
 
-    // Validation
-    if (!positionName || !department || !description || isNaN(required) || required <= 0) {
-      alert("Please fill all required fields and number of employees must be greater than 0.");
+    if (!positionName || !department || !description || !expireOn || !source) {
+      alert("Please fill all required fields");
       return;
     }
 
-    const newJob = {
+    // ❌ DUPLICATE CHECK
+    const duplicate = jobPositions.some(job =>
+      job.position_name.toLowerCase() === positionName.toLowerCase() &&
+      job.position_id !== editJobId
+    );
+
+    if (duplicate) {
+      alert("This job position already exists");
+      return;
+    }
+
+    const payload = {
       position_name: positionName,
       department_name: department,
-      no_of_employees_required: required,
       job_description: description,
+      expire_on: (expireOn),
+      sources: source
     };
 
+    const url = editJobId
+      ? `${JOB_API}/${editJobId}`
+      : JOB_API;
+
+    const method = editJobId ? "PUT" : "POST";
+
     try {
-      const res = await fetch(JOB_API, {
-        method: "POST",
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newJob)
+        body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error("Failed to save job position");
+      if (!res.ok) throw new Error("Save failed");
 
-      alert("✅ Job position saved successfully!");
+      alert(editJobId ? "Job updated!" : "Job saved!");
+
       jobForm.reset();
-      await fetchJobs();
+      editJobId = null;
+      document.querySelector(".save-btn").innerText = "💾 Save Job Position";
+
+      fetchJobs();
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to save job position!");
+      alert("Failed to save job");
     }
   });
 
-  // Initial fetch
+  /* ==============================
+     5️⃣ EDIT JOB
+  ============================== */
+  window.editJob = function (id) {
+    const job = jobPositions.find(j => j.position_id === id);
+    if (!job) return;
+
+    document.getElementById("positionName").value = job.position_name;
+    deptSelect.value = job.department_name;
+    document.getElementById("description").value = job.job_description;
+    document.getElementById("expireOn").value =
+      job.expire_on ? job.expire_on.slice(0, 16) : "";
+    document.getElementById("source").value = job.sources || "";
+
+    editJobId = id;
+    document.querySelector(".save-btn").innerText = "✏️ Update Job Position";
+  };
+
+  /* ==============================
+     6️⃣ DELETE JOB
+  ============================== */
+window.deleteJob = async function (id, employeeCount) {
+
+  if (employeeCount > 0) {
+    alert("❌ Cannot delete this job position. Employees are assigned.");
+    return;
+  }
+
+  if (!confirm("Are you sure you want to delete this job?")) return;
+
+  try {
+    const res = await fetch(`${JOB_API}/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Delete failed");
+
+    alert("Job deleted!");
+    fetchJobs();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to delete job");
+  }
+};
+
+  /* ==============================
+     INITIAL LOAD
+  ============================== */
+  await fetchDepartmentsForJob();
+  await fetchEmployees();   // 👈 MUST LOAD FIRST
+
   await fetchJobs();
+
 });
 
 
@@ -247,34 +482,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelForm = document.getElementById("cancelForm");
   const formTitle = document.getElementById("formTitle");
   const stars = document.querySelectorAll(".star");
+
   const interviewerSelect = document.getElementById("interviewerName");
+  const secondInterviewerSelect = document.getElementById("secondInterviewer"); // now select
+  const firstInterviewInput = document.getElementById("firstInterview");
+  const secondInterviewInput = document.getElementById("secondInterview");
 
   const deptSelect = document.getElementById("applicantDept");
   const positionSelect = document.getElementById("applicantPosition");
 
-  const APP_API = "https://localhost:7228/api/RecruitmentApplicant";
-  const EMP_API = "https://localhost:7228/api/employee";
-  const JOB_API = "https://localhost:7228/api/jobposition";
-const pdfInput = document.getElementById("pdfUpload");
-const pdfPreview = document.getElementById("pdfPreview");
-let uploadedPDFBase64 = null;
-// Handle PDF selection
-pdfInput.addEventListener("change", () => {
-  const file = pdfInput.files[0];
-  if (file && file.type === "application/pdf") {
-    const reader = new FileReader();
-    reader.onload = () => {
-      uploadedPDFBase64 = reader.result.split(',')[1]; // Get Base64 without prefix
-      pdfPreview.innerHTML = `
-        <embed src="${reader.result}" type="application/pdf" width="100%" height="300px">
-      `;
-    };
-    reader.readAsDataURL(file);
-  } else {
-    uploadedPDFBase64 = null;
-    pdfPreview.innerHTML = "❌ Invalid file type. Please upload a PDF.";
-  }
-});
+  const APP_API = "http://localhost:5228/api/RecruitmentApplicant";
+  const EMP_API = "http://localhost:5228/api/employee";
+  const JOB_API = "http://localhost:5228/api/jobposition";
+  const pdfInput = document.getElementById("pdfUpload");
+  const pdfPreview = document.getElementById("pdfPreview");
+
+  let uploadedPDFBase64 = null;
   let applications = [];
   let employees = [];
   let jobs = [];
@@ -296,25 +519,35 @@ pdfInput.addEventListener("change", () => {
     });
   });
 
-  function renderStars(rating) {
-    let html = "";
-    for (let i = 1; i <= 5; i++) {
-      html += `<span style="color:${i <= rating ? 'gold' : '#ccc'}">★</span>`;
+  // Handle PDF selection
+  pdfInput.addEventListener("change", () => {
+    const file = pdfInput.files[0];
+    if (file && file.type === "application/pdf") {
+      const reader = new FileReader();
+      reader.onload = () => {
+        uploadedPDFBase64 = reader.result.split(',')[1];
+        pdfPreview.innerHTML = `<embed src="${reader.result}" type="application/pdf" width="100%" height="300px">`;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      uploadedPDFBase64 = null;
+      pdfPreview.innerHTML = "❌ Invalid file type. Please upload a PDF.";
     }
-    return html;
-  }
+  });
 
-  // 🌐 Fetch Employees for interviewer dropdown
+  // 🌐 Fetch Employees for both interviewer dropdowns
   async function fetchEmployees() {
     try {
       const res = await fetch(EMP_API);
       employees = await res.json();
-      interviewerSelect.innerHTML = '<option value="">Select Interviewer</option>';
-      employees.forEach(emp => {
-        const option = document.createElement("option");
-        option.value = emp.first_name + " " + emp.last_name;
-        option.textContent = emp.first_name + " " + emp.last_name;
-        interviewerSelect.appendChild(option);
+      [interviewerSelect, secondInterviewerSelect].forEach(select => {
+        select.innerHTML = '<option value="">Select Interviewer</option>';
+        employees.forEach(emp => {
+          const option = document.createElement("option");
+          option.value = emp.first_name + " " + emp.last_name;
+          option.textContent = emp.first_name + " " + emp.last_name;
+          select.appendChild(option);
+        });
       });
     } catch (err) {
       console.error("Error fetching employees:", err);
@@ -322,13 +555,11 @@ pdfInput.addEventListener("change", () => {
     }
   }
 
-  // 🌐 Fetch Job Positions for Department & Position dropdowns
+  // 🌐 Fetch Jobs
   async function fetchJobs() {
     try {
       const res = await fetch(JOB_API);
       jobs = await res.json();
-
-      // Clear and populate Department dropdown
       const deptSet = new Set();
       deptSelect.innerHTML = '<option value="">Select Department</option>';
       jobs.forEach(job => {
@@ -341,7 +572,6 @@ pdfInput.addEventListener("change", () => {
         }
       });
 
-      // Clear and populate Position dropdown
       positionSelect.innerHTML = '<option value="">Select Position</option>';
       jobs.forEach(job => {
         const option = document.createElement("option");
@@ -349,21 +579,27 @@ pdfInput.addEventListener("change", () => {
         option.textContent = job.position_name;
         positionSelect.appendChild(option);
       });
-
     } catch (err) {
-      console.error("Error fetching jobs:", err);
-      alert("❌ Failed to load job positions");
+      console.error(err);
     }
   }
 
-  // 🌐 Fetch existing applications
+  // 🔥 Filter positions by department
+  deptSelect.addEventListener("change", () => {
+    const selectedDept = deptSelect.value;
+    positionSelect.innerHTML = '<option value="">Select Position</option>';
+    jobs.filter(j => j.department_name === selectedDept)
+        .forEach(j => positionSelect.appendChild(new Option(j.position_name, j.position_name)));
+  });
+
+  // 🌐 Fetch Applications
   async function fetchApplications() {
     try {
       const res = await fetch(APP_API);
       applications = await res.json();
       renderApplications();
     } catch (err) {
-      console.error("Error fetching applications:", err);
+      console.error(err);
       alert("❌ Failed to fetch applications");
     }
   }
@@ -378,19 +614,20 @@ pdfInput.addEventListener("change", () => {
         <td>${app.position_name}</td>
         <td>${app.department_name}</td>
         <td>${app.status}</td>
-        <td>${renderStars(app.rating || 0)}</td>
+        <td>${'★'.repeat(app.rating || 0) + '☆'.repeat(5-(app.rating || 0))}</td>
       `;
       tr.addEventListener("click", () => openForm(index));
       appTable.appendChild(tr);
     });
   }
 
-  // Open Form
   function openForm(index = null) {
     formContainer.classList.remove("hidden");
     form.reset();
     updateStars(0);
     selectedRating = 0;
+    uploadedPDFBase64 = null;
+    pdfPreview.innerHTML = "";
 
     if (index !== null) {
       const app = applications[index];
@@ -409,33 +646,27 @@ pdfInput.addEventListener("change", () => {
       document.getElementById("stageSelect").value = app.status;
       document.getElementById("notes").value = app.notes;
       interviewerSelect.value = app.interviewer_name || "";
+      secondInterviewerSelect.value = app.second_interviewer_name || "";
+      firstInterviewInput.value = app.first_interview ? app.first_interview.split("T")[0] : "";
+      secondInterviewInput.value = app.second_interview ? app.second_interview.split("T")[0] : "";
       selectedRating = app.rating || 0;
       updateStars(selectedRating);
-      
-   
-  // ✅ Show previously uploaded PDF if exists
-  if (app.pdf_file) {
-    uploadedPDFBase64 = app.pdf_file;
-    pdfPreview.innerHTML = `<embed src="data:application/pdf;base64,${app.pdf_file}" type="application/pdf" width="100%" height="300px">`;
-  } else {
-    uploadedPDFBase64 = null;
-    pdfPreview.innerHTML = "";
-  }
-} else {
-  editingIndex = null;
-  formTitle.textContent = "Create Application";
-  uploadedPDFBase64 = null;
-  pdfPreview.innerHTML = "";
-}
+
+      if (app.pdf_file) {
+        uploadedPDFBase64 = app.pdf_file;
+        pdfPreview.innerHTML = `<embed src="data:application/pdf;base64,${app.pdf_file}" type="application/pdf" width="100%" height="300px">`;
+      }
+    } else {
+      editingIndex = null;
+      formTitle.textContent = "Create Application";
+    }
   }
 
   addNewApp.addEventListener("click", () => openForm());
   cancelForm.addEventListener("click", () => formContainer.classList.add("hidden"));
 
-  // Submit Form
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const newApp = {
       applicant_name: document.getElementById("applicantName").value,
       email: document.getElementById("applicantEmail").value,
@@ -450,7 +681,10 @@ pdfInput.addEventListener("change", () => {
       notes: document.getElementById("notes").value,
       rating: selectedRating,
       interviewer_name: interviewerSelect.value,
-  pdf_file: uploadedPDFBase64, // ✅ Pass Base64 here
+      second_interviewer_name: secondInterviewerSelect.value,
+      first_interview: firstInterviewInput.value,
+      second_interview: secondInterviewInput.value,
+      pdf_file: uploadedPDFBase64,
       created_on: new Date().toISOString()
     };
 
@@ -471,15 +705,21 @@ pdfInput.addEventListener("change", () => {
         });
         alert("✅ Application created successfully!");
       }
+          if (newApp.status === "Contract Signed") {
+      const applicantName = encodeURIComponent(newApp.applicant_name);
+      const employeeURL = `http://127.0.0.1:5500/Html/html/employee.html?recruitment=${applicantName}`;
+      window.open(employeeURL, "_blank"); // Opens the Employee page
+      console.log("Employee creation URL:", employeeURL);
+    }
+
       await fetchApplications();
       formContainer.classList.add("hidden");
     } catch (err) {
-      console.error("Error saving application:", err);
+      console.error(err);
       alert("❌ Failed to save application!");
     }
   });
 
-  // Initial fetches
   fetchEmployees();
   fetchJobs();
   fetchApplications();

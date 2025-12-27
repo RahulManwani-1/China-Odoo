@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Hierarchy</title>
+  <link rel="stylesheet" href="./DepartmentChart.css" />
+  <style>
+    /* Minimal CSS for layout */
+    .chart-container {
+      width: 95%;
+      margin: auto;
+      text-align: center;
+    }
+    .node-wrapper {
+      margin: 10px;
+    }
+    .employee-box {
+      display: inline-block;
+      padding: 10px 15px;
+      border-radius: 6px;
+      color: #fff;
+      margin: 5px;
+      font-size: 14px;
+      min-width: 150px;
+    }
+  /* Horizontal scroll for children */
+.children {
+  display: flex;           /* arrange children in a row */
+  flex-wrap: nowrap;       /* prevent wrapping to next line */
+  overflow-x: auto;        /* horizontal scroll if overflow */
+  padding: 10px 5px;
+  margin-left: 0;          /* remove left margin since flex handles spacing */
+  border-left: none;       /* optional: remove vertical line if needed */
+  gap: 10px;               /* space between boxes */
+}
+
+/* Optional: add scroll style */
+.children::-webkit-scrollbar {
+  height: 6px;
+}
+.children::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.3);
+  border-radius: 3px;
+}
+.children::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1);
+}
+
+/* Make parent row scrollable too if needed */
+.parent-row {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 10px 0;
+  gap: 10px;
+}
+
+    .toggle {
+      cursor: pointer;
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      text-decoration: underline;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="chart-container">
+    <h1>Employee Hierarchy (Manager Wise)</h1>
+    <div id="employeeTree"></div>
+  </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+  const API_URL = "http://localhost:5228/api/employee";
+
+  async function fetchEmployees() {
+    const res = await fetch(API_URL);
+    return await res.json();
+  }
+
+  function buildHierarchy(list) {
+    const map = {};
+    const roots = [];
+
+    list.forEach(emp => {
+      map[emp.employee_id] = { ...emp, children: [] };
+    });
+
+    list.forEach(emp => {
+      if (emp.manager_name) {
+        // Find manager by name
+        const manager = list.find(m => `${m.first_name} ${m.last_name}` === emp.manager_name);
+        if (manager) {
+          map[manager.employee_id].children.push(map[emp.employee_id]);
+        } else {
+          roots.push(map[emp.employee_id]);
+        }
+      } else {
+        roots.push(map[emp.employee_id]);
+      }
+    });
+
+    return roots;
+  }
+
+  const colors = [
+    "rgb(52,152,219)","rgb(46,204,113)","rgb(231,76,60)",
+    "rgb(155,89,182)","rgb(241,196,15)","rgb(230,126,34)",
+    "rgb(26,188,156)","rgb(52,73,94)","rgb(127,140,141)",
+    "rgb(192,57,43)","rgb(22,160,133)","rgb(41,128,185)"
+  ];
+  let colorIndex = 0;
+  function getColor() { return colors[colorIndex++ % colors.length]; }
+
+  let nodeCounter = 0;
+
+  function renderNode(node) {
+    const hasChildren = node.children.length > 0;
+    const nodeId = 'node-' + (nodeCounter++);
+
+    let html = `
+      <div class="node-wrapper">
+        <div class="employee-box" style="background:${getColor()}">
+          <strong>${node.first_name} ${node.last_name}</strong><br>
+          <em>${node.position_name || "-"}</em><br>
+          ${hasChildren ? `<span class="toggle" onclick="toggleNode('${nodeId}')">➕ Expand</span>` : ""}
+        </div>
+    `;
+
+    if (hasChildren) {
+      html += `<div class="children hidden" id="${nodeId}">`;
+      node.children.forEach(child => {
+        html += renderNode(child);
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  window.toggleNode = function(id) {
+    const el = document.getElementById(id);
+    const btn = el.previousElementSibling.querySelector(".toggle");
+
+    if (el.classList.contains("hidden")) {
+      el.classList.remove("hidden");
+      btn.innerText = "➖ Collapse";
+    } else {
+      el.classList.add("hidden");
+      btn.innerText = "➕ Expand";
+    }
+  };
+
+  const employees = await fetchEmployees();
+  const tree = buildHierarchy(employees);
+
+  let html = `<div class="parent-row">`;
+  tree.forEach(root => html += renderNode(root));
+  html += `</div>`;
+
+  document.getElementById("employeeTree").innerHTML = html;
+});
+</script>
+</body>
+</html>

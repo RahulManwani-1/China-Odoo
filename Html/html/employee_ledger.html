@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Ledger | HR System</title>
+  <link rel="stylesheet" href="./ledger.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Employee Ledger</h1>
+
+    <!-- Add Ledger Entry Form -->
+    <form id="ledgerForm">
+      <div class="form-row">
+        <label>Employee</label>
+        <select id="employeeSelect" required></select>
+      </div>
+
+      <div class="form-row">
+        <label>Reference Type</label>
+        <select id="refType" required>
+          <option value="">Select Type</option>
+          <option value="Salary">Salary</option>
+          <option value="Loan">Loan</option>
+          <option value="Installment">Installment</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>Reference Code</label>
+        <input type="text" id="refCode" required />
+      </div>
+
+      <div class="form-row">
+        <label>Debit</label>
+        <input type="number" id="debit" value="0" />
+      </div>
+
+      <div class="form-row">
+        <label>Credit</label>
+        <input type="number" id="credit" value="0" />
+      </div>
+
+      <div class="form-row">
+        <label>Description</label>
+        <input type="text" id="description" />
+      </div>
+
+      <button type="submit">💾 Add Ledger Entry</button>
+    </form>
+
+    <h2>Ledger Entries</h2>
+    <table id="ledgerTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Employee</th>
+          <th>Dept</th>
+          <th>Ref Type</th>
+          <th>Ref Code</th>
+          <th>Debit</th>
+          <th>Credit</th>
+          <th>Balance</th>
+          <th>Description</th>
+          <th>Created On</th>
+        </tr>
+      </thead>
+      <tbody id="ledgerTableBody"></tbody>
+    </table>
+  </div>
+
+  <script src="./employee_ledger.js"></script>
+</body>
+</html>

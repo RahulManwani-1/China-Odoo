@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HR Dashboard | BluePulse</title>
+
+<link rel="stylesheet" href="dashboard.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* FORCE BLACK HEADINGS */
+h1, h2, h3, h4 {
+  color: #000 !important;
+  font-weight: 600;
+}
+
+/* CHART LAYOUT */
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.chart-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard-container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Human Resource Planner</h2>
+    <nav class="nav-menu">
+      <button class="nav-btn" onclick="location.href='recruitment_process.html'">👤 Recruitment</button>
+      <button class="nav-btn" onclick="location.href='employee.html'">👥 Employee</button>
+      <button class="nav-btn" onclick="location.href='attendance.html'">🕒 Attendance</button>
+      <button class="nav-btn" onclick="location.href='payroll.html'">💰 Payroll</button>
+      <button class="nav-btn" onclick="location.href='RegisterUser.html'">⚙️ Settings</button>
+      <button class="nav-btn logout-btn">🚪 Logout</button>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <h1>HR Analytics Dashboard 📊</h1>
+
+    <div class="charts">
+
+      <!-- DEPARTMENTS -->
+      <div class="chart-card">
+        <h3>Employees by Department</h3>
+        <canvas id="departmentChart"></canvas>
+      </div>
+
+      <!-- JOB POSITIONS -->
+      <div class="chart-card">
+        <h3>Job Positions by Department</h3>
+        <canvas id="jobChart"></canvas>
+      </div>
+
+      <!-- APPLICANTS -->
+      <div class="chart-card">
+        <h3>Recruitment Status</h3>
+        <canvas id="applicantChart"></canvas>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ===============================
+   DEPARTMENT GRAPH
+================================ */
+async function loadDepartments() {
+  const res = await fetch("http://localhost:5228/api/Department");
+  const data = await res.json();
+
+  const labels = data.map(d => d.department_name);
+  const values = data.map(d => d.number_of_employees);
+
+  new Chart(document.getElementById("departmentChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Employees",
+        data: values,
+        backgroundColor: "#4CAF50"
+      }]
+    },
+    options: { responsive: true }
+  });
+}
+
+/* ===============================
+   JOB POSITIONS GRAPH
+================================ */
+async function loadJobs() {
+  const res = await fetch("http://localhost:5228/api/JobPosition");
+  const data = await res.json();
+
+  const countByDept = {};
+  data.forEach(j => {
+    countByDept[j.department_name] = (countByDept[j.department_name] || 0) + 1;
+  });
+
+  new Chart(document.getElementById("jobChart"), {
+    type: "bar",
+    data: {
+      labels: Object.keys(countByDept),
+      datasets: [{
+        label: "Open Positions",
+        data: Object.values(countByDept),
+        backgroundColor: "#2196F3"
+      }]
+    },
+    options: { responsive: true }
+  });
+}
+
+/* ===============================
+   APPLICANTS STATUS GRAPH
+================================ */
+async function loadApplicants() {
+  const res = await fetch("http://localhost:5228/api/RecruitmentApplicant");
+  const data = await res.json();
+
+  const statusCount = {};
+  data.forEach(a => {
+    statusCount[a.status] = (statusCount[a.status] || 0) + 1;
+  });
+
+  new Chart(document.getElementById("applicantChart"), {
+    type: "pie",
+    data: {
+      labels: Object.keys(statusCount),
+      datasets: [{
+        data: Object.values(statusCount),
+        backgroundColor: [
+          "#FFC107",
+          "#4CAF50",
+          "#F44336",
+          "#03A9F4"
+        ]
+      }]
+    },
+    options: { responsive: true }
+  });
+}
+
+/* ===============================
+   LOAD ALL
+================================ */
+loadDepartments();
+loadJobs();
+loadApplicants();
+</script>
+
+</body>
+</html>

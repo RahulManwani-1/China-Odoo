@@ -12,13 +12,11 @@
       <h2 class="sidebar-title">Human Resource Planner</h2>
       <nav class="nav-menu">
         <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
-                    <button class="nav-btn active" onclick="window.location.href='checkin.html'">👤 Check In</button>
+        <button class="nav-btn active" onclick="window.location.href='checkin.html'">👤 Check In</button>
         <button class="nav-btn" onclick="window.location.href='checkout.html'">👤 Check Out</button>
-
-        <button class="nav-btn"onclick="window.location.href='attendance.html'">🕒 Attendance</button>
+        <button class="nav-btn" onclick="window.location.href='attendance.html'">🕒 Attendance</button>
         <button class="nav-btn">⚙️ Settings</button>
-                      <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
-
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
         <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
       </nav>
     </aside>
@@ -33,68 +31,108 @@
       </div>
     </main>
   </div>
+<script>
+  function goBack() {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "dashboard.html";
+  }
+}
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const employeeSelect = document.getElementById("employeeSelect");
-      const checkInBtn = document.getElementById("checkInBtn");
-      const logout = document.getElementById("logout");
+document.addEventListener("DOMContentLoaded", async () => {
+  const employeeSelect = document.getElementById("employeeSelect");
+  const checkInBtn = document.getElementById("checkInBtn");
+  const logout = document.getElementById("logout");
 
-      const employees = JSON.parse(localStorage.getItem("employees")) || [];
-      const attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+  const EMPLOYEE_API = "http://localhost:5228/api/Employee"; 
+  const ATTENDANCE_API = "http://localhost:5228/api/Attendance"; 
 
-      // Fill select dropdown
-      employees.forEach(emp => {
-        const option = document.createElement("option");
-        option.value = emp.sequence;
-        option.textContent = emp.firstName + " " + emp.lastName;
-        employeeSelect.appendChild(option);
-      });
-checkInBtn.addEventListener("click", () => {
-  const selectedEmp = employeeSelect.value;
-  if (!selectedEmp) return alert("Select an employee!");
+  let employees = [];
 
-  const today = new Date().toISOString().split("T")[0];
-  let record = attendance.find(r => r.date === today);
-
-  if (!record) {
-    // Initialize record with checkInTimes and checkOutTimes
-    record = { 
-      date: today, 
-      present: 0, 
-      late: 0, 
-      checkedIn: [], 
-      checkInTimes: {}, 
-      checkOutTimes: {} 
-    };
-    attendance.push(record);
+  // Fetch employees from API
+  try {
+    const res = await fetch(EMPLOYEE_API);
+    employees = await res.json();
+    employees.forEach(emp => {
+      const option = document.createElement("option");
+      option.value = emp.employee_id; 
+      option.textContent = emp.first_name + " " + emp.last_name;
+      employeeSelect.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Error fetching employees:", err);
+    alert("❌ Failed to load employees!");
   }
 
-  if (record.checkedIn.includes(selectedEmp)) {
-    alert("Employee already checked in!");
-    return;
-  }
+
+
+checkInBtn.addEventListener("click", async () => {
+  const selectedEmpId = employeeSelect.value;
+  if (!selectedEmpId) return alert("Select an employee!");
+
+  const selectedEmp = employees.find(emp => emp.employee_id == selectedEmpId);
+  if (!selectedEmp) return alert("Invalid employee selected!");
 
   const now = new Date();
-  const isLate = now.getHours() >= 9 ? 1 : 0;
+  const todayStr = now.getFullYear() + "-" + 
+                   String(now.getMonth() + 1).padStart(2,'0') + "-" + 
+                   String(now.getDate()).padStart(2,'0'); // YYYY-MM-DD
 
-  record.present += 1;
-  record.late += isLate;
-  record.checkedIn.push(selectedEmp.toString());  
+  try {
+    // Fetch all attendance records
+    const resAll = await fetch(ATTENDANCE_API);
+    const allAttendance = await resAll.json();
 
-  // SAVE check-in time for this employee
-  record.checkInTimes[selectedEmp] = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    // Check if employee already checked in today
+    const alreadyCheckedIn = allAttendance.some(att => {
+      const attDate = new Date(att.attendance_date);
+      const attDateStr = attDate.getFullYear() + "-" + 
+                         String(attDate.getMonth() + 1).padStart(2,'0') + "-" + 
+                         String(attDate.getDate()).padStart(2,'0');
+      return att.employee_name === (selectedEmp.first_name + " " + selectedEmp.last_name) &&
+             attDateStr === todayStr;
+    });
 
-  localStorage.setItem("attendance", JSON.stringify(attendance));
-  alert(`✅ Checked in successfully at ${record.checkInTimes[selectedEmp]}`);
+    if (alreadyCheckedIn) {
+      return alert(`⚠️ ${selectedEmp.first_name} ${selectedEmp.last_name} has already checked in today!`);
+    }
+
+    // Proceed to check in
+    const payload = {
+      attendance_date: todayStr, // YYYY-MM-DD
+      employee_name: selectedEmp.first_name + " " + selectedEmp.last_name,
+      check_in_time: now.toISOString() // ISO for backend
+    };
+
+    const res = await fetch(ATTENDANCE_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      console.error(errData);
+      return alert("❌ Failed to check in!");
+    }
+
+    const data = await res.json();
+    alert(`✅ ${payload.employee_name} checked in successfully`);
+
+  } catch (err) {
+    console.error("Error during check-in:", err);
+    alert("❌ Failed to check in!");
+  }
 });
 
-      logout.addEventListener("click", () => {
-        alert("👋 You have been logged out.");
-        window.location.href = "Index.html";
-      });
-    });
-  </script>
-  
+
+  logout.addEventListener("click", () => {
+    alert("👋 You have been logged out.");
+    window.location.href = "Index.html";
+  });
+});
+</script>
+
 </body>
 </html>

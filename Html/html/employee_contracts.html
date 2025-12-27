@@ -15,8 +15,9 @@
         <button class="nav-btn" onclick="window.location.href='job_positions.html'">💼 Job Positions</button>
         <button class="nav-btn" onclick="window.location.href='recruitment_process.html'">📋 Recruitment</button>
         <button class="nav-btn active" onclick="window.location.href='employee_contracts.html'">📄 Contracts</button>
+        <button class="nav-btn" onclick="window.location.href='DepartmentChart.html'">📋 Department Chart</button>
 
-        <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
         <button class="nav-btn logout-btn" onclick="window.location.href='dashboard.html'">🚪 Logout</button>
       </nav>
     </aside>
@@ -49,8 +50,9 @@
         <form id="contractForm">
           <div class="form-row">
             <div class="form-group">
-              <label>Employee Name</label>
-              <input type="text" id="employeeName" required>
+<select id="employeeName" required>
+  <option value="">Select Employee</option>
+</select>
             </div>
             <div class="form-group">
               <label>Contract Type</label>
@@ -76,12 +78,21 @@
           <div class="form-row">
             <div class="form-group">
               <label>Salary</label>
-              <input type="number" id="salary" required>
+    <input type="number" id="salary" min="0" required>
             </div>
-            <div class="form-group">
-              <label>Working Hours</label>
-              <input type="text" id="workingHours" placeholder="e.g. 9am-5pm">
-            </div>
+        <div class="form-row">
+  <div class="form-group">
+    <label>Working Schedule</label>
+    <select id="workingSchedule" required>
+      <option value="">Select Schedule</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Working Hours</label>
+    <input type="text" id="workingHours" placeholder="e.g. 9am-5pm">
+  </div>
+</div>
           </div>
 
           <div class="form-row">

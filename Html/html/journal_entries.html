@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Journals</title>
+  <link rel="stylesheet" href="employee.css" />
+</head>
+<body>
+
+<div class="dashboard-container">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Accounting</h2>
+    <nav class="nav-menu">
+      <button class="nav-btn active">📘 Journals</button>
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <h1>Journal Entries</h1>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Journal</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Reference</th>
+          <th>Debit</th>
+          <th>Credit</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody id="journalTableBody"></tbody>
+    </table>
+  </main>
+</div>
+
+<script>
+  function goBack() {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "dashboard.html";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const API_URL = "http://localhost:5228/api/Journal";
+  const tableBody = document.getElementById("journalTableBody");
+
+  const fetchJournals = async () => {
+    try {
+      const res = await fetch(API_URL);
+      const journals = await res.json();
+
+      tableBody.innerHTML = "";
+
+      journals.forEach(j => {
+        const row = document.createElement("tr");
+        row.style.cursor = "pointer";
+
+        row.innerHTML = `
+          <td>${j.id}</td>
+          <td>${j.journal_name}</td>
+          <td>${j.journal_type}</td>
+          <td>${j.entry_date.split("T")[0]}</td>
+          <td>${j.reference ?? ""}</td>
+          <td>${j.debit}</td>
+          <td>${j.credit}</td>
+          <td>${j.source_module ?? ""}</td>
+        `;
+
+        row.onclick = () => {
+          window.location.href = `journal_detail.html?id=${j.id}`;
+        };
+
+        tableBody.appendChild(row);
+      });
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to load journals");
+    }
+  };
+
+  fetchJournals();
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,165 @@
+/* Container */
+.chart-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #e6f2ff;
+  min-height: 100vh;
+  animation: fadeIn 1.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  animation: slideDown 0.8s ease-out;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+} */
+.chart-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* TREE STRUCTURE – CENTERED HIERARCHY */
+.chart-container {
+  text-align: center;
+}
+
+#departmentTree > ul {
+  display: inline-block;
+}
+
+ul {
+  padding-left: 0;
+  position: relative;
+}
+
+/* CHILDREN IN ONE ROW */
+ul ul {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  border-left: none;
+  margin-top: 25px;
+}
+
+/* CONNECT LINES */
+li {
+  list-style: none;
+  position: relative;
+  padding-top: 20px;
+}
+
+li::before {
+  content: "";
+  width: 2px;
+  height: 20px;
+  background: #ccc;
+  position: absolute;
+  top: 0;
+  left: 50%;
+}
+
+/* HORIZONTAL LINES CONNECTING CHILDREN */
+ul ul li::after {
+  content: "";
+  width: 40px;
+  height: 2px;
+  background: #ccc;
+  position: absolute;
+  top: 0;
+  left: calc(50% - 40px);
+}
+
+/* BOXES */
+.dept-box {
+  padding: 12px 18px;
+  border-radius: 10px;
+  color: #fff;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  width: 220px;
+  margin: 0 auto;
+  transition: transform .2s;
+}
+.chart-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #eef3f8;
+  min-height: 100vh;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 30px;
+}
+
+/* PARENTS IN ONE ROW */
+.parent-row {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* NODE */
+.node-wrapper {
+  text-align: center;
+}
+
+/* BOX */
+.dept-box {
+  padding: 14px 18px;
+  border-radius: 12px;
+  color: #fff;
+  width: 230px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+  transition: transform 0.2s;
+}
+
+.dept-box:hover {
+  transform: translateY(-4px);
+}
+
+/* TOGGLE BUTTON */
+.toggle {
+  margin-top: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.25);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* CHILDREN */
+.children {
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* HIDE */
+.hidden {
+  display: none;
+}
+
+/* COLORS */
+.dept-box:nth-child(5n+1){background:#007bff;}
+.dept-box:nth-child(5n+2){background:#28a745;}
+.dept-box:nth-child(5n+3){background:#ffc107;color:#000;}
+.dept-box:nth-child(5n+4){background:#dc3545;}
+.dept-box:nth-child(5n+5){background:#6f42c1;}
+

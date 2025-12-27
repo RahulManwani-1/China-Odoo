@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Create Employee | BluePulse</title>
   <link rel="stylesheet" href="employee.css" />
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
 </head>
 <body>
   <div class="dashboard-container">
@@ -13,10 +15,10 @@
       <h2 class="sidebar-title">Human Resource Planner</h2>
       <nav class="nav-menu">
         <button class="nav-btn active">👤 Employees</button>
-        <button class="nav-btn" onclick="window.location.href='dashboard.html'">🕒 Attendance</button>
-        <button class="nav-btn">⚙️ Settings</button>
-                      <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
+            <button class="nav-btn" onclick="window.location.href='EmployeeChart.html'">📄 Employee Chart</button>
+
     <button class="nav-btn" onclick="window.location.href='employee_contracts.html'">📄 Employee Contracts</button>
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
 
         <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
       </nav>
@@ -26,16 +28,31 @@
     <main class="main-content">
       <h1>Employee Management</h1>
 
+      <!-- <div class="form-actions" style="text-align: right; margin-bottom: 10px;">
+  <button id="exportExcel" class="save-btn">📤 Export to Excel</button>
+  <label for="importExcel" class="save-btn" style="cursor: pointer; margin-left: 5px;">
+    📥 Import from Excel
+  </label>
+  <input type="file" id="importExcel" accept=".xlsx, .xls" style="display: none;" />
+</div> -->
       <!-- Add New Button -->
       <div class="form-actions" style="text-align: right;">
         <button id="addNewBtn" class="save-btn">➕ Add New Employee</button>
       </div>
 
+      <!-- Export / Import Buttons -->
+
+
       <!-- Employee Form -->
 <!-- Employee Form -->
 <form id="employeeForm" class="employee-form hidden">
   <!-- ROW 1 -->
+   <label>Recruitment Applicant</label>
+<select id="recruitment_applicant" class="form-control">
+    <option value="">Select Applicant</option>
+</select>
   <div class="form-row">
+    
     <div class="form-group">
       <label>First Name</label>
       <input type="text" id="first_name" required />
@@ -119,6 +136,13 @@
     <option value="">Select Department</option>
   </select>
 </div>
+<div class="form-group">
+  <label>Manager</label>
+  <select id="manager_name">
+    <option value="">Select Manager</option>
+  </select>
+</div>
+
 
 
 <div class="form-group">
@@ -127,32 +151,33 @@
     <option value="">Select Position</option>
   </select>
 </div>
-
-  </div>
-
-  <!-- ROW 8 -->
-  <div class="form-row">
-    <div class="form-group">
-      <label>Date of Joining</label>
-      <input type="date" id="date_of_joining" required />
-    </div>
     <div class="form-group">
       <label>Emergency Contact Name</label>
       <input type="text" id="emergency_contact_name" />
     </div>
-  </div>
-
-  <!-- ROW 9 -->
-  <div class="form-row">
-    <div class="form-group">
+        <div class="form-group">
       <label>Emergency Contact Phone</label>
       <input type="tel" id="emergency_contact_phone" placeholder="+92 3XX XXXXXXX" />
     </div>
-    <div class="form-group">
+  </div>
+
+  <!-- ROW 8 -->
+  <!-- <div class="form-row"> -->
+    <!-- <div class="form-group">
+      <label>Date of Joining</label>
+      <input type="date" id="date_of_joining" required />
+    </div> -->
+
+  <!-- </div> -->
+
+  <!-- ROW 9 -->
+  <!-- <div class="form-row"> -->
+
+    <!-- <div class="form-group">
       <label>Salary</label>
       <input type="number" id="salary" />
-    </div>
-  </div>
+    </div> -->
+  <!-- </div> -->
 
 <div class="form-group">
   <label>Status</label>

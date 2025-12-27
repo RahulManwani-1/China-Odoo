@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chart of Accounts</title>
+  <link rel="stylesheet" href="employee.css" />
+</head>
+<body>
+
+<div class="dashboard-container">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Accounting</h2>
+    <nav class="nav-menu">
+      <button class="nav-btn active">📊 Chart of Accounts</button>
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <h1>Chart of Accounts</h1>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Account Name</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody id="coaTableBody"></tbody>
+    </table>
+  </main>
+</div>
+
+<script>
+  function goBack() {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "dashboard.html";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const API_URL = "http://localhost:5228/api/ChartOfAccounts";
+  const tableBody = document.getElementById("coaTableBody");
+
+  const fetchCOA = async () => {
+    try {
+      const res = await fetch(API_URL);
+      const accounts = await res.json();
+
+      tableBody.innerHTML = "";
+
+      accounts.forEach(acc => {
+        const row = document.createElement("tr");
+        row.style.cursor = "pointer";
+
+        row.innerHTML = `
+          <td>${acc.code}</td>
+          <td>${acc.name}</td>
+          <td>${acc.account_type}</td>
+        `;
+
+        row.onclick = () => {
+          window.location.href = `chart_of_account_detail.html?id=${acc.id}`;
+        };
+
+        tableBody.appendChild(row);
+      });
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to load chart of accounts");
+    }
+  };
+
+  fetchCOA();
+});
+</script>
+
+</body>
+</html>

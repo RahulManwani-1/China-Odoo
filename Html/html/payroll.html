@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payroll | BluePulse</title>
+  <link rel="stylesheet" href="./payroll.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2 class="sidebar-title">Human Resource Planner</h2>
+      <nav class="nav-menu">
+        <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
+                <button class="nav-btn" onclick="window.location.href='allowances.html'">👤 Allowance</button>
+        <button class="nav-btn" onclick="window.location.href='loan.html'">👤 Loan</button>
+        <button class="nav-btn" onclick="window.location.href='employee_ledger.html'">👤 Employee Ledger</button>
+
+        <button class="nav-btn active">💰 Payroll</button>
+        <button class="nav-btn">⚙️ Settings</button>
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
+        <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <h1>Payroll Management</h1>
+
+      <!-- Payroll Run Section -->
+      <div class="payroll-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Select Month</label>
+            <input type="date" id="payrollMonth" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button id="runPayrollBtn" class="save-btn">▶ Run Payroll</button>
+        </div>
+      </div>
+
+      <!-- Payroll Table -->
+      <h2>Payroll Records</h2>
+      <table class="data-table" id="payrollTable">
+        <thead>
+          <tr>
+            <th>Payroll Code</th>
+            <th>Employee Name</th>
+            <th>Department</th>
+            
+            <th>Basic Salary</th>
+            <th>Allowances</th>
+            <th>Loan Deduction</th>
+                        <th>No. of Days</th>
+            <th>No. Of Hrs</th>
+            <th>Paid Off</th>
+            <th>Unpaid Off</th>
+
+            <th>Net Salary</th>
+            <th>Month</th>
+          </tr>
+        </thead>
+        <tbody id="payrollTableBody"></tbody>
+      </table>
+    </main>
+  </div>
+
+  <script src="./payroll.js"></script>
+</body>
+</html>

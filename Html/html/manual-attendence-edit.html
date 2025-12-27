@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance List | BluePulse</title>
+  <link rel="stylesheet" href="./employee.css" />
+  <style>
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border: 1px solid #ddd; text-align: center; }
+    th { background: #f4f4f4; }
+    .edit-btn { padding: 5px 10px; cursor: pointer; }
+    .edit-box { margin-top: 20px; padding: 15px; border: 1px solid #ccc; width: 300px; }
+  </style>
+</head>
+<body>
+
+<h2>Attendance List</h2>
+
+<table id="attendanceTable">
+  <thead>
+    <tr>
+      <th>Employee</th>
+      <th>Date</th>
+      <th>Check In</th>
+      <th>Check Out</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div class="edit-box" id="editBox" style="display:none;">
+  <h3>Edit Attendance</h3>
+  <input type="hidden" id="attendanceId" />
+
+  <label>Check In</label>
+  <input type="time" id="editCheckIn" />
+
+  <label>Check Out</label>
+  <input type="time" id="editCheckOut" />
+
+  <br><br>
+  <button id="saveEditBtn">Save</button>
+  <button onclick="cancelEdit()">Cancel</button>
+</div>
+
+<script>
+const ATT_API = "http://localhost:5228/api/Attendance";
+let attendanceList = [];
+let selectedAttendance = null;
+
+// Format ISO string to HH:MM
+function formatTime(dt) {
+  if (!dt) return "-";
+  const d = new Date(dt);
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+// Load attendance list
+async function loadAttendance() {
+  try {
+    const res = await fetch(ATT_API);
+    attendanceList = await res.json();
+
+    const tbody = document.querySelector("#attendanceTable tbody");
+    tbody.innerHTML = "";
+
+    attendanceList.forEach(a => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${a.employee_name}</td>
+          <td>${a.attendance_date.substring(0,10)}</td>
+          <td>${formatTime(a.check_in_time)}</td>
+          <td>${formatTime(a.check_out_time)}</td>
+          <td>
+            <button class="edit-btn" onclick="editAttendance(${a.attendance_id})">Edit</button>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error("Failed to load attendance:", err);
+    alert("❌ Failed to load attendance!");
+  }
+}
+
+// Open edit form
+function editAttendance(id) {
+  selectedAttendance = attendanceList.find(a => a.attendance_id === id);
+  if (!selectedAttendance) return;
+
+  document.getElementById("attendanceId").value = id;
+  document.getElementById("editCheckIn").value = selectedAttendance.check_in_time ? formatTime(selectedAttendance.check_in_time) : "";
+  document.getElementById("editCheckOut").value = selectedAttendance.check_out_time ? formatTime(selectedAttendance.check_out_time) : "";
+
+  document.getElementById("editBox").style.display = "block";
+}
+
+// Cancel edit
+function cancelEdit() {
+  document.getElementById("editBox").style.display = "none";
+}
+
+// Save edit
+document.getElementById("saveEditBtn").addEventListener("click", async () => {
+  const id = document.getElementById("attendanceId").value;
+  const inTime = document.getElementById("editCheckIn").value;
+  const outTime = document.getElementById("editCheckOut").value;
+  const date = selectedAttendance.attendance_date.substring(0,10);
+
+  try {
+    // Update check-in
+    if (inTime) {
+      await fetch(`${ATT_API}/${id}/checkin`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        // Send as ISO string without extra timezone conversion
+        body: JSON.stringify(`${date}T${inTime}`)
+      });
+    }
+
+    // Update check-out
+    if (outTime) {
+      await fetch(`${ATT_API}/${id}/checkout`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(`${date}T${outTime}`)
+      });
+    }
+
+    alert("✅ Attendance updated successfully");
+    document.getElementById("editBox").style.display = "none";
+    loadAttendance();
+
+  } catch (err) {
+    console.error("Failed to update attendance:", err);
+    alert("❌ Failed to update attendance!");
+  }
+});
+
+// Initial load
+loadAttendance();
+</script>
+
+</body>
+</html>

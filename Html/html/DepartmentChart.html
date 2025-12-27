@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Department Hierarchy</title>
+  <link rel="stylesheet" href="./DepartmentChart.css" />
+</head>
+<body>
+  <div class="chart-container">
+    <h1>Department Hierarchy</h1>
+    <div id="departmentTree"></div>
+  </div>
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+  const API_URL = "http://localhost:5228/api/Department";
+
+  async function fetchDepartments() {
+    const res = await fetch(API_URL);
+    return await res.json();
+  }
+
+  function buildHierarchy(list) {
+    const map = {};
+    const roots = [];
+
+    list.forEach(item => {
+      map[item.department_name] = { ...item, children: [] };
+    });
+
+    list.forEach(item => {
+      if (item.parent_department_name) {
+        map[item.parent_department_name]?.children.push(
+          map[item.department_name]
+        );
+      } else {
+        roots.push(map[item.department_name]);
+      }
+    });
+
+    return roots;
+  }
+
+  // 12 RGB colors
+  const colors = [
+    "rgb(52,152,219)",
+    "rgb(46,204,113)",
+    "rgb(231,76,60)",
+    "rgb(155,89,182)",
+    "rgb(241,196,15)",
+    "rgb(230,126,34)",
+    "rgb(26,188,156)",
+    "rgb(52,73,94)",
+    "rgb(127,140,141)",
+    "rgb(192,57,43)",
+    "rgb(22,160,133)",
+    "rgb(41,128,185)"
+  ];
+
+  let colorIndex = 0;
+
+  function getColor() {
+    const c = colors[colorIndex % colors.length];
+    colorIndex++;
+    return c;
+  }
+
+  function renderNode(node) {
+    const hasChildren = node.children.length > 0;
+    const nodeId = Math.random().toString(36).substring(2, 9);
+
+    let html = `
+      <div class="node-wrapper">
+        <div class="dept-box" style="background:${getColor()}">
+          <strong>${node.department_name}</strong><br>
+          <span>Manager: ${node.manager_name || "-"}</span><br>
+          <span>Employees: ${node.number_of_employees}</span>
+          ${hasChildren ? `<div class="toggle" onclick="toggleNode('${nodeId}')">➕ Expand</div>` : ""}
+        </div>
+    `;
+
+    if (hasChildren) {
+      html += `<div class="children hidden" id="${nodeId}">`;
+      node.children.forEach(child => {
+        html += renderNode(child);
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  window.toggleNode = function (id) {
+    const el = document.getElementById(id);
+    const btn = el.previousElementSibling.querySelector(".toggle");
+
+    if (el.classList.contains("hidden")) {
+      el.classList.remove("hidden");
+      btn.innerText = "➖ Collapse";
+    } else {
+      el.classList.add("hidden");
+      btn.innerText = "➕ Expand";
+    }
+  };
+
+  const depts = await fetchDepartments();
+  const tree = buildHierarchy(depts);
+
+  let html = `<div class="parent-row">`;
+  tree.forEach(parent => {
+    html += renderNode(parent);
+  });
+  html += `</div>`;
+
+  document.getElementById("departmentTree").innerHTML = html;
+});
+</script>
+
+</body>
+</html>

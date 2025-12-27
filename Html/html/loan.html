@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Issue Loan / Advance</title>
+  <link rel="stylesheet" href="./employee.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">Human Resource Planner</h2>
+      <nav class="nav-menu">
+        <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
+        <button class="nav-btn active">💰 Loans / Advances</button>
+        <button class="nav-btn" onclick="window.location.href='dashboard.html'">🕒 Attendance</button>
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
+
+        <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <h1>Issue Loan / Advance</h1>
+
+      <!-- Loan Form -->
+      <form id="loanForm" class="employee-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Employee</label>
+            <select id="employee_select" required>
+              <option value="">Select Employee</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Loan Type</label>
+            <select id="loan_type" required>
+              <option value="">Select Type</option>
+              <option value="Loan">Loan</option>
+              <option value="Advance">Advance</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Loan Code</label>
+            <input type="text" id="loan_code"  />
+          </div>
+
+          <div class="form-group">
+            <label>Total Amount</label>
+            <input type="number" id="total_amount" required  min="1"/>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Installment Amount</label>
+            <input type="number" id="installment_amount" required  min="1" />
+          </div>
+
+          <div class="form-group">
+            <label>Total Installments</label>
+            <input type="number" id="total_installments" required  min="1" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status</label>
+            <select id="status" required>
+              <option value="Active">Active</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Start Month</label>
+            <input type="month" id="start_month" required />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="save-btn">💾 Issue Loan</button>
+        </div>
+      </form>
+
+      <!-- Loan Table -->
+      <h2>Issued Loans / Advances</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Loan Type</th>
+            <th>Loan Code</th>
+            <th>Total Amount</th>
+            <th>Installment</th>
+            <th>Remaining</th>
+            <th>Status</th>
+            <th>Start Month</th>
+          </tr>
+        </thead>
+        <tbody id="loanTableBody"></tbody>
+      </table>
+    </main>
+  </div>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const API_EMP = "http://localhost:5228/api/employee";
+  const API_LOAN = "http://localhost:5228/api/EmployeeLoan";
+
+  const employeeSelect = document.getElementById("employee_select");
+  const loanForm = document.getElementById("loanForm");
+  const loanTableBody = document.getElementById("loanTableBody");
+  const loanCodeInput = document.getElementById("loan_code");
+
+  let loans = [];
+
+  // Fetch employees for dropdown
+  const fetchEmployees = async () => {
+    try {
+      const res = await fetch(API_EMP);
+      const employees = await res.json();
+
+      employeeSelect.innerHTML = '<option value="">Select Employee</option>';
+
+      employees.forEach(emp => {
+        const option = document.createElement("option");
+        option.value = emp.employee_id;
+        option.textContent = emp.first_name + " " + emp.last_name;
+        option.dataset.name = emp.first_name + " " + emp.last_name;
+        option.dataset.department = emp.department_name;
+        employeeSelect.appendChild(option);
+      });
+    } catch (err) {
+      console.error("Error fetching employees:", err);
+    }
+  };
+
+  await fetchEmployees();
+
+  // Fetch all loans for table
+  const fetchLoans = async () => {
+    try {
+      const res = await fetch(API_LOAN);
+      loans = await res.json();
+      loanTableBody.innerHTML = "";
+
+      loans.forEach(loan => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${loan.employee_name}</td>
+          <td>${loan.loan_type}</td>
+          <td>${loan.loan_code}</td>
+          <td>${loan.total_amount}</td>
+          <td>${loan.installment_amount}</td>
+          <td>${loan.remaining_amount}</td>
+          <td>${loan.status}</td>
+          <td>${loan.start_month}</td>
+        `;
+        loanTableBody.appendChild(row);
+      });
+
+      // Auto-generate next loan code
+      generateLoanCode();
+    } catch (err) {
+      console.error("Error fetching loans:", err);
+    }
+  };
+
+  await fetchLoans();
+
+  // Auto-generate loan code
+  const generateLoanCode = () => {
+    if (loans.length === 0) {
+      loanCodeInput.value = "LN-0001"; // First record
+    } else {
+      // Get last loan code number
+      const lastCode = loans[loans.length - 1].loan_code;
+      const numberPart = parseInt(lastCode.split("-")[1]);
+      const nextNumber = (numberPart + 1).toString().padStart(4, "0");
+      loanCodeInput.value = `LN-${nextNumber}`;
+    }
+    loanCodeInput.readOnly = true; // Make field readonly
+  };
+
+  // Submit loan
+  loanForm.addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const loanType = document.getElementById("loan_type").value;
+    const totalAmount = parseFloat(document.getElementById("total_amount").value);
+    const installmentAmount = parseFloat(document.getElementById("installment_amount").value);
+    const totalInstallments = parseInt(document.getElementById("total_installments").value);
+
+    // Validation for Loan type
+    if (loanType === "Loan") {
+      const sumInstallments = installmentAmount * totalInstallments;
+      if (sumInstallments !== totalAmount) {
+        return alert(`❌ For a Loan, Installment Amount × Total Installments must equal Total Amount!\nExpected: ${totalAmount}, Got: ${sumInstallments}`);
+      }
+    }
+
+    const loan = {
+      employee_id: parseInt(employeeSelect.value),
+      employee_name: employeeSelect.selectedOptions[0].dataset.name,
+      department_name: employeeSelect.selectedOptions[0].dataset.department,
+      loan_type: loanType,
+      loan_code: loanCodeInput.value, // use auto-generated code
+      total_amount: totalAmount,
+      installment_amount: installmentAmount,
+      total_installments: totalInstallments,
+      remaining_amount: totalAmount,
+      status: document.getElementById("status").value,
+      start_month: document.getElementById("start_month").value
+    };
+
+    try {
+      await fetch(API_LOAN, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loan)
+      });
+
+      alert("✅ Loan issued successfully!");
+      await fetchLoans();       // refresh table
+      loanForm.reset();         // reset form
+      generateLoanCode();       // regenerate next Loan Code
+    } catch (err) {
+      console.error("Error issuing loan:", err);
+      alert("❌ Failed to issue loan!");
+    }
+  });
+});
+document.addEventListener("DOMContentLoaded", async () => {
+  const API_LOAN = "http://localhost:5228/api/EmployeeLoan";
+  const loanCodeInput = document.getElementById("loan_code");
+  let loans = [];
+
+  // Fetch loans and populate table
+  const fetchLoans = async () => {
+    try {
+      const res = await fetch(API_LOAN);
+      loans = await res.json();
+
+      // Auto-generate Loan Code immediately
+      generateLoanCode();
+    } catch (err) {
+      console.error("Error fetching loans:", err);
+      loanCodeInput.value = "LN-0001"; // fallback first code
+    }
+  };
+
+  // Auto-generate loan code
+  const generateLoanCode = () => {
+    if (loans.length === 0) {
+      loanCodeInput.value = "LN-0001";
+    } else {
+      const lastCode = loans[loans.length - 1].loan_code;
+      const numberPart = parseInt(lastCode.split("-")[1]);
+      const nextNumber = (numberPart + 1).toString().padStart(4, "0");
+      loanCodeInput.value = `LN-${nextNumber}`;
+    }
+    loanCodeInput.readOnly = true;
+  };
+
+  await fetchLoans(); // call on page load
+});
+
+</script>
+
+
+</body>
+</html>

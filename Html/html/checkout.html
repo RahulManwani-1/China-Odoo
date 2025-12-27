@@ -7,84 +7,102 @@
   <link rel="stylesheet" href="employee.css" />
 </head>
 <body>
-  <div class="dashboard-container">
-    <aside class="sidebar">
-      <h2 class="sidebar-title">Human Resource Planner</h2>
-      <nav class="nav-menu">
-        <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
-               <button class="nav-btn" onclick="window.location.href='checkin.html'">👤 Check In</button>
-        <button class="nav-btn active" onclick="window.location.href='checkout.html'">👤 Check Out</button>
+<div class="dashboard-container">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Human Resource Planner</h2>
+    <nav class="nav-menu">
+      <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
+      <button class="nav-btn" onclick="window.location.href='checkin.html'">👤 Check In</button>
+      <button class="nav-btn active" onclick="window.location.href='checkout.html'">👤 Check Out</button>
+      <button class="nav-btn" onclick="window.location.href='attendance.html'">🕒 Attendance</button>
+      <button class="nav-btn">⚙️ Settings</button>
+      <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
+      <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
+    </nav>
+  </aside>
 
-        <button class="nav-btn"onclick="window.location.href='attendance.html'">🕒 Attendance</button>
-        <button class="nav-btn">⚙️ Settings</button>
-              <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
+  <main class="main-content">
+    <h1>Check Out</h1>
+    <div class="form-row">
+      <select id="employeeSelect">
+        <option value="">Select Employee</option>
+      </select>
+      <button id="checkOutBtn" class="save-btn">Check Out</button>
+    </div>
+  </main>
+</div>
 
-        <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
-      </nav>
-    </aside>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const employeeSelect = document.getElementById("employeeSelect");
+  const checkOutBtn = document.getElementById("checkOutBtn");
+  const logout = document.getElementById("logout");
 
-    <main class="main-content">
-      <h1>Check Out</h1>
-      <div class="form-row">
-        <select id="employeeSelect">
-          <option value="">Select Employee</option>
-        </select>
-        <button id="checkOutBtn" class="save-btn">Check Out</button>
-      </div>
-    </main>
-  </div>
+  const EMPLOYEE_API = "http://localhost:5228/api/Employee";
+  const ATTENDANCE_API = "http://localhost:5228/api/Attendance";
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const employeeSelect = document.getElementById("employeeSelect");
-      const checkOutBtn = document.getElementById("checkOutBtn");
-      const logout = document.getElementById("logout");
+  let employees = [];
 
-      const employees = JSON.parse(localStorage.getItem("employees")) || [];
-      const attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+  // Load employees
+  const empRes = await fetch(EMPLOYEE_API);
+  employees = await empRes.json();
 
-      // Fill select dropdown
-      employees.forEach(emp => {
-        const option = document.createElement("option");
-        option.value = emp.sequence;
-        option.textContent = emp.firstName + " " + emp.lastName;
-        employeeSelect.appendChild(option);
-      });
+  employees.forEach(emp => {
+    const opt = document.createElement("option");
+    opt.value = emp.employee_id;
+    opt.textContent = `${emp.first_name} ${emp.last_name}`;
+    employeeSelect.appendChild(opt);
+  });
 
-      checkOutBtn.addEventListener("click", () => {
-        const selectedEmp = employeeSelect.value;
-        if (!selectedEmp) return alert("Select an employee!");
+  // Checkout
+  checkOutBtn.addEventListener("click", async () => {
+    const empId = employeeSelect.value;
+    if (!empId) return alert("⚠️ Select employee");
 
-        const today = new Date().toISOString().split("T")[0];
-        let record = attendance.find(r => r.date === today);
-        if (!record) {
-          alert("Employee has not checked in today!");
-          return;
-        }
+    const emp = employees.find(e => e.employee_id == empId);
+    const today = new Date().toISOString().split("T")[0];
+    const now = new Date().toISOString();
 
-        if (!record.checkedIn.includes(selectedEmp)) {
-          alert("Employee has not checked in yet!");
-          return;
-        }
+    // Get attendance list
+    const attRes = await fetch(ATTENDANCE_API);
+    const attendance = await attRes.json();
 
-        if (!record.checkOutTimes) record.checkOutTimes = {};
-        if (record.checkOutTimes[selectedEmp]) {
-          alert("Employee already checked out!");
-          return;
-        }
+    // Find today's attendance
+    const record = attendance.find(a =>
+      a.employee_name === `${emp.first_name} ${emp.last_name}` &&
+      a.attendance_date.split("T")[0] === today
+    );
 
-        const now = new Date();
-        record.checkOutTimes[selectedEmp] = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    if (!record)
+      return alert("⚠️ Employee has not checked in today");
 
-        localStorage.setItem("attendance", JSON.stringify(attendance));
-        alert(`✅ Checked out successfully at ${record.checkOutTimes[selectedEmp]}`);
-      });
+    if (record.check_out_time)
+      return alert("⚠️ Employee already checked out");
 
-      logout.addEventListener("click", () => {
-        alert("👋 You have been logged out.");
-        window.location.href = "Index.html";
-      });
-    });
-  </script>
+    // ✅ CORRECT API CALL
+    const res = await fetch(
+      `${ATTENDANCE_API}/${record.attendance_id}/checkout`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(now)
+      }
+    );
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error(err);
+      return alert("❌ Checkout failed");
+    }
+
+    alert(`✅ ${emp.first_name} ${emp.last_name} checked out successfully`);
+  });
+
+  logout.addEventListener("click", () => {
+    window.location.href = "Index.html";
+  });
+});
+</script>
+
 </body>
 </html>

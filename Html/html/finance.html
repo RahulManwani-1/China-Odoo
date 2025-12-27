@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard | BluePulse</title>
+
+<link rel="stylesheet" href="dashboard.css" />
+
+<!-- INTERNAL STYLES -->
+<style>
+/* ---------- GLOBAL FIX ---------- */
+h1, h2, h3, h4 {
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+/* ---------- DASHBOARD ---------- */
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.chart-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.chart-card h2 {
+  color: #1a1a1a;
+  font-size: 28px;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard-container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Human Resource Planner</h2>
+    <nav class="nav-menu">
+      <button class="nav-btn" onclick="location.href='recruitment_process.html'">👤 Recruitment</button>
+      <button class="nav-btn" onclick="location.href='journal_entries.html'">⚙️ Finance</button>
+      <button class="nav-btn logout-btn">🚪 Logout</button>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <h1>Finance Dashboard 📊</h1>
+
+    <!-- KPI CARDS -->
+    <div class="charts">
+      <div class="chart-card">
+        <h4>Total Debit</h4>
+        <h2 id="totalDebit">0</h2>
+      </div>
+      <div class="chart-card">
+        <h4>Total Credit</h4>
+        <h2 id="totalCredit">0</h2>
+      </div>
+      <div class="chart-card">
+        <h4>Net Balance</h4>
+        <h2 id="netBalance">0</h2>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts">
+      <div class="chart-card">
+        <h3>Journal Entries (Debit vs Credit)</h3>
+        <canvas id="journalChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>Employee Ledger Balance Trend</h3>
+        <canvas id="ledgerChart"></canvas>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let journalChart, ledgerChart;
+
+/* =============================
+   JOURNAL GRAPH + KPI
+============================= */
+async function loadJournalGraph() {
+  const res = await fetch("http://localhost:5228/api/Journal");
+  const data = await res.json();
+
+  const grouped = {};
+
+  data.forEach(j => {
+    const month = new Date(j.entry_date).toLocaleString('en', { month: 'short', year: 'numeric' });
+    if (!grouped[month]) grouped[month] = { debit: 0, credit: 0 };
+    grouped[month].debit += j.debit;
+    grouped[month].credit += j.credit;
+  });
+
+  const labels = Object.keys(grouped);
+  const debitData = labels.map(m => grouped[m].debit);
+  const creditData = labels.map(m => grouped[m].credit);
+
+  // KPI VALUES
+  const totalDebit = debitData.reduce((a,b)=>a+b,0);
+  const totalCredit = creditData.reduce((a,b)=>a+b,0);
+
+  document.getElementById("totalDebit").innerText = totalDebit.toFixed(2);
+  document.getElementById("totalCredit").innerText = totalCredit.toFixed(2);
+  document.getElementById("netBalance").innerText = (totalDebit - totalCredit).toFixed(2);
+
+  if (journalChart) journalChart.destroy();
+
+  journalChart = new Chart(document.getElementById("journalChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { label: "Debit", data: debitData, backgroundColor: "#4CAF50" },
+        { label: "Credit", data: creditData, backgroundColor: "#F44336" }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "top" }
+      }
+    }
+  });
+}
+
+/* =============================
+   LEDGER GRAPH
+============================= */
+async function loadLedgerGraph() {
+  const res = await fetch("http://localhost:5228/api/EmployeeLedger");
+  const data = await res.json();
+
+  const sorted = data
+    .filter(l => l.employee_id === 2014)
+    .sort((a,b)=>new Date(a.created_on)-new Date(b.created_on));
+
+  const labels = sorted.map(l => new Date(l.created_on).toLocaleDateString());
+  const balances = sorted.map(l => l.balance);
+
+  if (ledgerChart) ledgerChart.destroy();
+
+  ledgerChart = new Chart(document.getElementById("ledgerChart"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Outstanding Balance",
+        data: balances,
+        borderColor: "#2196F3",
+        backgroundColor: "rgba(33,150,243,0.15)",
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "top" }
+      }
+    }
+  });
+}
+
+/* =============================
+   LOAD DASHBOARD
+============================= */
+loadJournalGraph();
+loadLedgerGraph();
+</script>
+
+</body>
+</html>

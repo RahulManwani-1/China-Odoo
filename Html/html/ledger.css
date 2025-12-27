@@ -1,0 +1,174 @@
+/* ---------- GLOBAL ---------- */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #0a1a2f, #0e2a47);
+  color: #e0f1ff;
+  min-height: 100vh;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 50px auto;
+  padding: 20px;
+  background: rgba(5, 12, 25, 0.7);
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 180, 255, 0.3);
+}
+
+/* Headings */
+h1, h2 {
+  color: #00b4ff;
+  text-shadow: 0 0 10px #00b4ff;
+}
+
+/* Form */
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 30px;
+  padding: 15px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px;
+}
+
+.form-row {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+input, select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 180, 255, 0.3);
+  background-color: #0e223b;
+  color: #e0f1ff;
+  outline: none;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-color: #00b4ff;
+  box-shadow: 0 0 8px #00b4ff;
+}
+
+/* Submit Button */
+form button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #0077cc, #00b4ff);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+form button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #00b4ff;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(5, 12, 25, 0.25);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+thead th {
+  background: linear-gradient(90deg, rgba(0,180,255,0.06), rgba(0,180,255,0.03));
+  color: #bfe9ff;
+  font-weight: 600;
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(0,180,255,0.08);
+  font-size: 0.95rem;
+}
+
+tbody td {
+  padding: 10px;
+  color: #e6f7ff;
+  border-bottom: 1px solid rgba(0,180,255,0.04);
+  font-size: 0.93rem;
+}
+
+tbody tr:hover {
+  background: linear-gradient(90deg, rgba(0,180,255,0.03), rgba(0,180,255,0.02));
+}
+
+/* Sequence / ID column */
+tbody td:first-child,
+thead th:first-child {
+  font-weight: 700;
+  color: #00d0ff;
+  width: 80px;
+}
+
+/* Actions */
+tbody td:last-child {
+  display: flex;
+  gap: 8px;
+}
+
+/* Buttons inside table */
+.edit-btn, .delete-btn {
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: #e0f1ff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: rgba(0,180,255,0.15);
+}
+
+.delete-btn:hover {
+  background: rgba(255,80,80,0.2);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  form {
+    flex-direction: column;
+  }
+
+  table, thead, tbody, tr, td, th {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody td {
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0,180,255,0.1);
+  }
+
+  tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #bfe9ff;
+  }
+}

@@ -1,18 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <style>
-/* Make modal text black */
-#attendanceModal, 
-#attendanceModal * {
-  color: #000000 !important;
-}
-</style>
-
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Attendance | BluePulse</title>
+<title>Attendance Report | BluePulse</title>
 <link rel="stylesheet" href="employee.css" />
+<style>
+body { font-family: Arial, sans-serif; }
+.dashboard-container { display: flex; }
+.sidebar { width: 220px; }
+.main-content { flex: 1; padding: 20px; }
+
+.filters { display:flex; gap:20px; margin-bottom:20px; flex-wrap: wrap; }
+.filters select, .filters input { padding:6px 10px; }
+.data-table { width:100%; border-collapse: collapse; margin-bottom: 20px; }
+.data-table th, .data-table td { border:1px solid #ccc; padding:8px; text-align:left; }
+.data-table th { background:#007bff; color:#fff; }
+.print-btn { padding:8px 12px; background:#28a745; color:#fff; border:none; cursor:pointer; border-radius:4px; }
+.employee-header {
+  background: #0185ea;
+  padding: 10px;
+  margin-top: 15px;
+  cursor: pointer;
+  font-weight: bold;
+  border: 1px solid #542289;
+}
+
+.employee-header:hover {
+}
+
+.employee-content {
+  display: none;
+  margin-bottom: 20px;
+}
+
+@media print {
+  body * { visibility: hidden; }
+  #printArea, #printArea * { visibility: visible; }
+  #printArea { position: absolute; left:0; top:0; width: 100%; }
+  .print-header, .print-footer { text-align:center; font-weight:bold; margin:10px 0; }
+}
+</style>
 </head>
 <body>
 <div class="dashboard-container">
@@ -20,104 +48,229 @@
     <h2 class="sidebar-title">Human Resource Planner</h2>
     <nav class="nav-menu">
       <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
-                    <button class="nav-btn" onclick="window.location.href='checkin.html'">👤 Check In</button>
-        <button class="nav-btn" onclick="window.location.href='checkout.html'">👤 Check Out</button>
-
+      <button class="nav-btn" onclick="window.location.href='checkin.html'">👤 Check In</button>
+      <button class="nav-btn" onclick="window.location.href='manual-attendence-edit.html'">👤 Check Out</button>
       <button class="nav-btn active">🕒 Attendance</button>
-      <button class="nav-btn">⚙️ Settings</button>
-                    <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
-
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
       <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
     </nav>
   </aside>
 
   <main class="main-content">
-    <h1>Attendance Record</h1>
-    <table class="data-table" id="attendanceTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Present</th>
-          <th>Late</th>
-        </tr>
-      </thead>
-      <tbody id="attendanceBody"></tbody>
-    </table>
+    <h1>Attendance Report</h1>
 
-    <!-- Modal for Details -->
-    <div id="attendanceModal" class="modal hidden">
-      <div class="modal-content">
-        <span id="closeModal" class="close-btn">&times;</span>
-        <h2>Employee Attendance Details</h2>
-        <div id="modalDetails" class="details-grid"></div>
-      </div>
+    <div class="filters">
+      <select id="employeeFilter">
+        <option value="">All Employees</option>
+      </select>
+
+      <label>From: <input type="date" id="fromDate"></label>
+      <label>To: <input type="date" id="toDate"></label>
+
+      <button class="print-btn" id="printBtn">🖨️ Print PDF</button>
     </div>
+
+    <div id="reportContainer"></div>
   </main>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const attendanceBody = document.getElementById("attendanceBody");
-  const logout = document.getElementById("logout");
-  const modal = document.getElementById("attendanceModal");
-  const modalDetails = document.getElementById("modalDetails");
-  const closeModal = document.getElementById("closeModal");
+  function goBack() {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "dashboard.html";
+  }
+}
 
-  let attendance = JSON.parse(localStorage.getItem("attendance")) || [];
-  const employees = JSON.parse(localStorage.getItem("employees")) || [];
+document.addEventListener("DOMContentLoaded", async () => {
 
-  const renderAttendance = () => {
-    attendanceBody.innerHTML = "";
-    attendance.forEach((record, index) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${record.date}</td>
-        <td>${record.present}</td>
-        <td>${record.late}</td>
-      `;
-      row.dataset.index = index;
-      attendanceBody.appendChild(row);
+  const EMPLOYEE_API = "http://localhost:5228/api/Employee";
+  const ATTENDANCE_API = "http://localhost:5228/api/Attendance";
+
+  const employeeFilter = document.getElementById("employeeFilter");
+  const fromDate = document.getElementById("fromDate");
+  const toDate = document.getElementById("toDate");
+  const reportContainer = document.getElementById("reportContainer");
+  const printBtn = document.getElementById("printBtn");
+function minutesToHHMM(minutes) {
+  if (!minutes || minutes <= 0) return "00:00";
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function hoursToHHMM(hours) {
+  if (!hours || hours <= 0) return "00:00";
+  const totalMinutes = Math.round(hours * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+  let employees = [];
+  let attendance = [];
+
+  try {
+    const resEmp = await fetch(EMPLOYEE_API);
+    employees = await resEmp.json();
+    const resAtt = await fetch(ATTENDANCE_API);
+    attendance = await resAtt.json();
+
+    // Populate employee filter
+    employees.forEach(emp => {
+      const option = document.createElement("option");
+      option.value = emp.first_name + " " + emp.last_name;
+      option.textContent = emp.first_name + " " + emp.last_name;
+      employeeFilter.appendChild(option);
     });
-  };
 
-  renderAttendance();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to load data");
+    return;
+  }
 
-  // Click to see details
-  attendanceBody.addEventListener("click", (e) => {
-    const row = e.target.closest("tr");
-    if (!row) return;
-    const record = attendance[row.dataset.index];
+  function formatDate(dStr) {
+    const d = new Date(dStr);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
 
-    modalDetails.innerHTML = "";
-    record.checkedIn.forEach(empSeq => {
-      const emp = employees.find(e => e.sequence === empSeq);
-      if (!emp) return;
+  function filterAttendance() {
+    let filtered = [...attendance];
 
-      const checkInTime = record.checkInTimes?.[empSeq] || "-";
-      const checkOutTime = record.checkOutTimes?.[empSeq] || "-";
+    if (employeeFilter.value) {
+      filtered = filtered.filter(a => a.employee_name === employeeFilter.value);
+    }
+    if (fromDate.value) {
+      filtered = filtered.filter(a => new Date(a.attendance_date) >= new Date(fromDate.value));
+    }
+    if (toDate.value) {
+      filtered = filtered.filter(a => new Date(a.attendance_date) <= new Date(toDate.value));
+    }
 
-      const div = document.createElement("div");
-      div.classList.add("details-item");
-      div.innerHTML = `
-        <p><strong>Name:</strong> ${emp.firstName} ${emp.lastName}</p>
-        <p><strong>Check In:</strong> ${checkInTime}</p>
-        <p><strong>Check Out:</strong> ${checkOutTime}</p>
-      `;
-      modalDetails.appendChild(div);
-    });
+    return filtered;
+  }
 
-    modal.classList.remove("hidden");
+function renderReport() {
+  const filtered = filterAttendance();
+
+  // Group by Employee
+  const groupedByEmployee = {};
+  filtered.forEach(att => {
+    if (!groupedByEmployee[att.employee_name]) {
+      groupedByEmployee[att.employee_name] = [];
+    }
+    groupedByEmployee[att.employee_name].push(att);
   });
 
-  closeModal.onclick = () => modal.classList.add("hidden");
-  modal.onclick = (event) => {
-    if (event.target === modal) modal.classList.add("hidden");
-  };
+  reportContainer.innerHTML = "";
 
-  logout.addEventListener("click", () => {
-    alert("👋 You have been logged out.");
-    window.location.href = "Index.html";
+  const printArea = document.createElement("div");
+  printArea.id = "printArea";
+
+  // Header
+  const header = document.createElement("div");
+  header.classList.add("print-header");
+  header.innerText = "Human Resource Planner - Attendance Report";
+  printArea.appendChild(header);
+
+  Object.keys(groupedByEmployee).sort().forEach(employee => {
+
+    // Employee Header (clickable)
+    const empHeader = document.createElement("div");
+    empHeader.className = "employee-header";
+    empHeader.innerText = employee;
+
+    // Employee Content (hidden)
+    const empContent = document.createElement("div");
+    empContent.className = "employee-content";
+
+    // Group employee records by date
+    const groupedByDate = {};
+    groupedByEmployee[employee].forEach(att => {
+      const date = formatDate(att.attendance_date);
+      if (!groupedByDate[date]) groupedByDate[date] = [];
+      groupedByDate[date].push(att);
+    });
+
+    Object.keys(groupedByDate).sort().forEach(date => {
+      const table = document.createElement("table");
+      table.classList.add("data-table");
+
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Late Minutes</th>
+            <th>Early Leave</th>
+            <th>Working Hours</th>
+            <th>Overtime Hours</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+
+      const tbody = table.querySelector("tbody");
+
+      groupedByDate[date].forEach(att => {
+        const checkIn = att.check_in_time
+          ? new Date(att.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : "-";
+
+        const checkOut = att.check_out_time
+          ? new Date(att.check_out_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : "-";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${date}</td>
+          <td>${checkIn}</td>
+          <td>${checkOut}</td>
+<td>${minutesToHHMM(att.late_minutes)}</td>
+<td>${minutesToHHMM(att.early_leave_minutes)}</td>
+<td>${hoursToHHMM(att.working_hours)}</td>
+<td>${hoursToHHMM(att.overtime_hours)}</td>
+
+        `;
+        tbody.appendChild(tr);
+      });
+
+      empContent.appendChild(table);
+    });
+
+    // Toggle expand/collapse
+    empHeader.addEventListener("click", () => {
+      empContent.style.display =
+        empContent.style.display === "none" ? "block" : "none";
+    });
+
+    printArea.appendChild(empHeader);
+    printArea.appendChild(empContent);
   });
+
+  // Footer
+  const footer = document.createElement("div");
+  footer.classList.add("print-footer");
+  footer.innerText = "Generated on: " + new Date().toLocaleString();
+  printArea.appendChild(footer);
+
+  reportContainer.appendChild(printArea);
+}
+
+  // Filters
+  employeeFilter.addEventListener("change", renderReport);
+  fromDate.addEventListener("change", renderReport);
+  toDate.addEventListener("change", renderReport);
+
+  // Print PDF
+  printBtn.addEventListener("click", () => {
+    window.print();
+  });
+
+  renderReport();
 });
 </script>
 </body>

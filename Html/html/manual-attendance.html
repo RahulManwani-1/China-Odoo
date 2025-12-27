@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manual Attendance | BluePulse</title>
+  <link rel="stylesheet" href="employee.css" />
+</head>
+<body>
+
+<div class="dashboard-container">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Human Resource Planner</h2>
+    <nav class="nav-menu">
+      <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
+      <button class="nav-btn" onclick="window.location.href='checkin.html'">👤 Check In</button>
+      <button class="nav-btn" onclick="window.location.href='checkout.html'">👤 Check Out</button>
+      <button class="nav-btn active">📝 Manual Attendance</button>
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <h1>Manual Attendance</h1>
+
+    <div class="form-row">
+      <select id="employeeSelect">
+        <option value="">Select Employee</option>
+      </select>
+
+      <input type="date" id="attendanceDate" />
+
+      <input type="time" id="checkInTime" />
+      <input type="time" id="checkOutTime" />
+
+      <button id="saveAttendanceBtn" class="save-btn">
+        Save Attendance
+      </button>
+    </div>
+  </main>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const EMPLOYEE_API = "http://localhost:5228/api/Employee";
+  const ATTENDANCE_API = "http://localhost:5228/api/Attendance";
+
+  const employeeSelect = document.getElementById("employeeSelect");
+  const saveBtn = document.getElementById("saveAttendanceBtn");
+
+  let employees = [];
+
+  // Load employees
+  const resEmp = await fetch(EMPLOYEE_API);
+  employees = await resEmp.json();
+
+  employees.forEach(emp => {
+    const opt = document.createElement("option");
+    opt.value = emp.employee_id;
+    opt.textContent = emp.first_name + " " + emp.last_name;
+    employeeSelect.appendChild(opt);
+  });
+
+  saveBtn.addEventListener("click", async () => {
+    const empId = employeeSelect.value;
+    const date = document.getElementById("attendanceDate").value;
+    const inTime = document.getElementById("checkInTime").value;
+    const outTime = document.getElementById("checkOutTime").value;
+
+    if (!empId || !date) {
+      return alert("Employee and Date are required!");
+    }
+
+    const emp = employees.find(e => e.employee_id == empId);
+    const empName = emp.first_name + " " + emp.last_name;
+
+    // Build ISO times
+    const checkInISO = inTime ? new Date(`${date}T${inTime}`).toISOString() : null;
+    const checkOutISO = outTime ? new Date(`${date}T${outTime}`).toISOString() : null;
+
+    try {
+      // Fetch existing attendance
+      const resAll = await fetch(ATTENDANCE_API);
+      const all = await resAll.json();
+
+      const record = all.find(a =>
+        a.employee_name === empName &&
+        a.attendance_date.startsWith(date)
+      );
+
+      if (record) {
+        // UPDATE
+        const payload = {
+          ...record,
+          check_in_time: checkInISO,
+          check_out_time: checkOutISO
+        };
+
+        await fetch(`${ATTENDANCE_API}/${record.attendance_id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        alert("✅ Attendance updated successfully");
+      } else {
+        // CREATE
+        const payload = {
+          attendance_date: date,
+          employee_name: empName,
+          check_in_time: checkInISO,
+          check_out_time: checkOutISO
+        };
+
+        await fetch(ATTENDANCE_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        alert("✅ Attendance created successfully");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to save attendance");
+    }
+  });
+});
+</script>
+
+</body>
+</html>

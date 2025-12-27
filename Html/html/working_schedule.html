@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Working Schedule | BluePulse</title>
+  <link rel="stylesheet" href="employee.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2 class="sidebar-title">Human Resource Planner</h2>
+      <nav class="nav-menu">
+        <button class="nav-btn" onclick="window.location.href='employee.html'">👤 Employees</button>
+        <button class="nav-btn active">🕒 Working Schedule</button>
+        <button class="nav-btn" onclick="window.location.href='dashboard.html'">⚙️ Attendance</button>
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
+
+        <button class="nav-btn logout-btn" id="logout">🚪 Logout</button>
+      </nav>
+    </aside>
+
+    <!-- Main Section -->
+    <main class="main-content">
+      <h1>Working Schedule Management</h1>
+
+      <!-- Add New Button -->
+      <div class="form-actions" style="text-align: right;">
+        <button id="addNewBtn" class="save-btn">➕ Add New Schedule</button>
+      </div>
+
+      <!-- Schedule Form -->
+      <form id="scheduleForm" class="employee-form hidden">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Shift Name</label>
+            <input type="text" id="shift_name" required />
+          </div>
+          <div class="form-group">
+            <label>Shift Start Time</label>
+            <input type="time" id="shift_start_time" required />
+          </div>
+          <div class="form-group">
+            <label>Shift End Time</label>
+            <input type="time" id="shift_end_time" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Break Start Time</label>
+            <input type="time" id="break_start_time" />
+          </div>
+          <div class="form-group">
+            <label>Break End Time</label>
+            <input type="time" id="break_end_time" />
+          </div>
+          <div class="form-group">
+            <label>Working Days</label>
+            <input type="text" id="working_days" placeholder="e.g. Mon,Tue,Wed" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="save-btn">💾 Save Schedule</button>
+          <button type="button" id="cancelBtn" class="delete-btn">❌ Cancel</button>
+        </div>
+      </form>
+
+      <!-- Schedule Table -->
+      <h2>Schedules</h2>
+      <table class="data-table" id="scheduleTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Shift Name</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Break Start</th>
+            <th>Break End</th>
+            <th>Working Days</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="scheduleTableBody"></tbody>
+      </table>
+    </main>
+  </div>
+
+  <script src="./working_schedule.js"></script>
+</body>
+</html>

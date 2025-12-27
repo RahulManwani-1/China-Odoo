@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Leaves | BluePulse</title>
+  <link rel="stylesheet" href="./employee.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">Human Resource Planner</h2>
+      <nav class="nav-menu">
+        <button class="nav-btn" onclick="window.location.href='dashboard.html'">🏠 Dashboard</button>
+        <button class="nav-btn active">🗓️ Employee Leaves</button>
+        <button class="nav-btn" onclick="window.location.href='public_holidays.html'">🎉 Public Holidays</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <h1>Employee Leaves</h1>
+      <div class="form-actions">
+        <button id="addEmployeeLeaveBtn" class="save-btn">➕ Add Leave</button>
+      </div>
+
+      <form id="employeeLeaveForm" class="hidden">
+        <label>Employee Name</label>
+        <select id="leave_employee_name" required></select>
+
+        <label>Department</label>
+        <input type="text" id="leave_department">
+        <label>Leave Type</label>
+        <select id="leave_type" required>
+          <option value="">Select</option>
+          <option value="Paid">Paid</option>
+          <option value="Sick">Sick</option>
+          <option value="Unpaid">Unpaid</option>
+        </select>
+        <label>Start Date</label>
+        <input type="date" id="leave_start_date" required>
+        <label>End Date</label>
+        <input type="date" id="leave_end_date" required>
+        <label>Status</label>
+        <select id="leave_status">
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+        <div class="form-actions">
+          <button type="submit" class="save-btn">💾 Save</button>
+          <button type="button" id="cancelLeaveForm" class="delete-btn">❌ Cancel</button>
+        </div>
+      </form>
+
+      <table class="data-table" id="employeeLeavesTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Department</th>
+            <th>Leave Type</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+  </div>
+
+  <script src="employee_leaves.js"></script>
+</body>
+</html>

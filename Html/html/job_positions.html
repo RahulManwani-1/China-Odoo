@@ -14,10 +14,11 @@
         <button class="nav-btn" onclick="window.location.href='departments.html'">🏢 Departments</button>
         <button class="nav-btn active" onclick="window.location.href='job_positions.html'">💼 Job Positions</button>
         <button class="nav-btn" onclick="window.location.href='recruitment_process.html'">📋 Recruitment</button>
-             <button class="nav-btn" onclick="window.location.href='employee_contracts.html'">📄 Employee Contracts</button>
+        <button class="nav-btn" onclick="window.location.href='employee_contracts.html'">📄 Employee Contracts</button>
+        <button class="nav-btn" onclick="window.location.href='DepartmentChart.html'">📋 Department Chart</button>
 
-                      <button class="nav-btn logout-btn" onclick="window.location.href='Dashboard.html'">🔙 Back</button>
-<button class="nav-btn logout-btn" onclick="window.location.href='dashboard.html'">🚪 Logout</button>
+<button class="nav-btn" onclick="goBack()">🔙 Back</button>
+        <button class="nav-btn logout-btn" onclick="window.location.href='dashboard.html'">🚪 Logout</button>
       </nav>
     </aside>
 
@@ -26,25 +27,47 @@
 
       <form id="jobForm" class="department-form">
         <div class="form-row">
+
           <div class="form-group">
             <label>Position Name</label>
             <input type="text" id="positionName" placeholder="e.g. Software Engineer" required>
           </div>
-        <div class="form-group">
-      <label>Department</label>
-      <select id="jobDept">
-        <option value="">Select Department</option>
-      </select>
-    </div>
 
           <div class="form-group">
-            <label>No. of Employees Required</label>
-            <input type="number" id="employeesRequired" min="1" value="1" required>
+            <label>Department</label>
+            <select id="jobDept">
+              <option value="">Select Department</option>
+            </select>
           </div>
+
+          <!-- REMOVED No. of Employees Required -->
+
           <div class="form-group">
             <label>Job Description</label>
             <input type="text" id="description" placeholder="e.g. Develop and maintain applications" required>
           </div>
+<div class="form-group">
+  <label>Source</label>
+  <select id="source" required>
+    <option value="">Select Source</option>
+    <option value="LinkedIn">LinkedIn</option>
+    <option value="Indeed">Indeed</option>
+    <option value="Referral">Referral</option>
+    <option value="Company Website">Company Website</option>
+    <option value="Facebook">Facebook</option>
+    <option value="Instagram">Instagram</option>
+    <option value="Walk-in">Walk-in</option>
+    <option value="Other">Other</option>
+  </select>
+</div>
+
+
+
+          <div class="form-group">
+            <label>Expire On (Date & Time)</label>
+            <input type="datetime-local" id="expireOn" required>
+          </div>
+
         </div>
 
         <div class="form-actions">
@@ -59,9 +82,15 @@
             <th>Sequence</th>
             <th>Position</th>
             <th>Department</th>
-            <th>Required</th>
             <th>Description</th>
+            <th>Expire On</th>   <!-- ADDED COLUMN -->
+            <th>Source</th>
+
             <th>Short Link</th>
+                        <th>No. of Employees</th>
+
+            
+            <th>Actions</th>
 
           </tr>
         </thead>

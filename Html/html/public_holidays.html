@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Holidays | BluePulse</title>
+  <link rel="stylesheet" href="./employee.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">Human Resource Planner</h2>
+      <nav class="nav-menu">
+        <button class="nav-btn" onclick="window.location.href='dashboard.html'">🏠 Dashboard</button>
+        <button class="nav-btn" onclick="window.location.href='employee_leaves.html'">🗓️ Employee Leaves</button>
+        <button class="nav-btn active">🎉 Public Holidays</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <h1>Public Holidays</h1>
+      <div class="form-actions">
+        <button id="addHolidayBtn" class="save-btn">➕ Add Holiday</button>
+      </div>
+
+      <form id="holidayForm" class="hidden">
+        <label>Holiday Name</label>
+        <input type="text" id="holiday_name" required>
+        <label>Start Date</label>
+        <input type="date" id="holiday_start_date" required>
+        <label>End Date</label>
+        <input type="date" id="holiday_end_date" required>
+        <label>Paid</label>
+        <select id="holiday_paid">
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+        <div class="form-actions">
+          <button type="submit" class="save-btn">💾 Save</button>
+          <button type="button" id="cancelHolidayForm" class="delete-btn">❌ Cancel</button>
+        </div>
+      </form>
+
+      <table class="data-table" id="holidayTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Holiday Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Paid</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+  </div>
+
+  <script src="public_holidays.js"></script>
+</body>
+</html>
